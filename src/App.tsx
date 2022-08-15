@@ -37,6 +37,7 @@ function App() {
   var reader = new FileReader();
   reader.readAsDataURL(img); 
   reader.onloadend = function() {
+  //@ts-ignore
   var base64data:string = reader.result;
   setImg(base64data)
   console.log(base64data);
