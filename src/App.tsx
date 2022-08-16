@@ -35,33 +35,25 @@ function App() {
   // const [btnDesc, setBtnDesc] = useState("")
   
   const api = axios.create({
-    baseURL:"http://192.168.77.254:3333/",
-    proxy:undefined})
+    baseURL:url,
+    proxy:undefined}
+    )
 
-  function handleMessage(){
+  async function handleMessage(){
 
-    const messages = [greet,messageBody,goodbye].join('\n,')
+    const messages = [greet,messageBody,goodbye].join('\n')
     setFullMessage(messages)
   }
 
-  function handleForm(e:FormEvent){
+  async function handleForm(e:FormEvent){
 
     e.preventDefault()
-    handleMessage();
-    var data = JSON.stringify({
-      "id":numeros,
-      "message":fullMessage
-    });
-
-    var xhr = new XMLHttpRequest();
-    xhr.withCredentials = false;
-
-    xhr.open("POST", "http://localhost:3333/message/text?key=123");
-
-    xhr.send(JSON.stringify({
-      "id":number,
-      "message":fullMessage
-    }))
+  handleMessage()
+  await api.post("/message/text?key=123",
+  {
+    "id":number,
+    "message":fullMessage,
+  }).then((response)=>console.log(response))
     
   }
 
@@ -78,7 +70,7 @@ function App() {
 
   function handleDebug(){
     console.log({
-      filter,
+      number,
       greet,
       messageBody,
       goodbye,
