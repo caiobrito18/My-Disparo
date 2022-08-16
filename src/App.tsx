@@ -1,48 +1,90 @@
 import { FormEvent, useState } from 'react'
 import { FileUploader } from 'react-drag-drop-files'
-import reactLogo from './assets/react.svg'
+import axios from 'axios'
 import './App.css'
+
+
+interface mensagem {
+  jid:string,
+  message:string,
+  listaTitulo?:string,
+  listaBtnTexto?:string,
+  listaRodape?:string,
+  listaItens?:string,
+  listaDesc?:string,
+}
 
 function App() {
   var numeros:any = []
-
-  const [url, setIUrl] = useState("")
-  const [filter, setFiler] = useState("")
-  const [listItems, setListItems] = useState("")
-  const [listFooter, setListFooter] = useState("")
-  const [listText, setListText] = useState("")
-  const [img, setImg] = useState("")
-  const [btnFooter, setBtnFooter] = useState("")
-  const [btnDesc, setBtnDesc] = useState("")
-  const [listDesc, setListDesc] = useState("")
   
-  function handleForm(e:FormEvent){
-    e.preventDefault()
-    const data = new FormData()
-    
-    data.append("dataBulk", url)
-    data.append("dataBulk", filter)
-    data.append("dataBulk", listItems)
-    data.append("dataBulk", listFooter)
-    data.append("dataBulk", listText)
-    data.append("dataBulk", listDesc)
-    data.append("dataBulk", btnFooter)
-    data.append("dataBulk", btnDesc)
-    data.append("dataBulk", img)
+  const [url, setUrl] = useState("")
+  const [number, setNumber] = useState("")
+  const [filter, setFilter] = useState("")
+  const [greet, setGreet] = useState("")
+  const [messageBody, setMessageBody] = useState("")
+  const [goodbye, setGoodBye] = useState("")
+  const [fullMessage, setFullMessage] = useState("")
 
-    console.log(data)
+  // const [listTitle, setListTitle] = useState("")
+  // const [listItems, setListItems] = useState("")
+  // const [listText, setListText] = useState("")
+  // const [listDesc, setListDesc] = useState("")
+  // const [listFooter, setListFooter] = useState("")
+  // const [img, setImg] = useState("")
+  // const [btnFooter, setBtnFooter] = useState("")
+  // const [btnDesc, setBtnDesc] = useState("")
+  
+  const api = axios.create({
+    baseURL:"http://192.168.77.254:3333/",
+    proxy:undefined})
 
+  function handleMessage(){
+
+    const messages = [greet,messageBody,goodbye].join('\n,')
+    setFullMessage(messages)
   }
-  const handleImg = (img:any) => {
-  var reader = new FileReader();
-  reader.readAsDataURL(img); 
-  reader.onloadend = function() {
-  //@ts-ignore
-  var base64data:string = reader.result;
-  setImg(base64data)
-  console.log(base64data);
-}
-  };
+
+  function handleForm(e:FormEvent){
+
+    e.preventDefault()
+    handleMessage();
+    var data = JSON.stringify({
+      "id":numeros,
+      "message":fullMessage
+    });
+
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = false;
+
+    xhr.open("POST", "http://localhost:3333/message/text?key=123");
+
+    xhr.send(JSON.stringify({
+      "id":number,
+      "message":fullMessage
+    }))
+    
+  }
+
+//   const handleImg = (img:any) => {
+//   var reader = new FileReader();
+//   reader.readAsDataURL(img); 
+//   reader.onloadend = function() {
+//   //@ts-ignore
+//   var base64data:string = reader.result;
+//   setImg(base64data)
+//   console.log(base64data);
+// }
+//   };
+
+  function handleDebug(){
+    console.log({
+      filter,
+      greet,
+      messageBody,
+      goodbye,
+      fullMessage
+    })
+  }
 
   return (
     <div className="App w-[100%] height-[90%] items-center justify-between">
@@ -52,12 +94,12 @@ function App() {
         {/* coloca as informações de envio */}
         <div>
           <label>Url: </label>
-          <input type={"text"} id='url'/>
+          <input type={"text"} id='url' value={url} onChange={(e)=>setUrl(e.target.value)}/>
         </div>
         {/* Número de Telefone do cliente */}
         <div className='flex flex-col'>
           <label htmlFor="">Filtros para envios das mensagens: </label>
-          <input type="text" />
+          <input type="text" value={filter} onChange={(e)=>setFilter(e.target.value)}/>
           <button>Filtrar</button>
         </div>
         <div>
@@ -67,8 +109,25 @@ function App() {
         </div>
 
         {/* coloca as informações de mensagem */}
-
-        {/* lista */}
+        {/* Corpo da Mensagem */}
+        <input type="text" value={number} onChange={(e)=>setNumber(e.target.value)}/>
+          {/* Nome da Lista */}
+          <div className='input-el'>
+            <label>Saudações separadas por ; </label>
+            <input type={"text"} id='lista-titulo' value={greet} onChange={(e)=>setGreet(e.target.value)}/>
+          </div>
+          {/* Itens da Lista */}
+          <div className='input-el h-40'>
+            <label>Corpo(s) das mensagens </label>
+            <textarea id='lista-itens' className='h-64 resize-none scroll-auto' value={messageBody} onChange={(e)=>setMessageBody(e.target.value)} title='Separado com ";"'/>
+          </div>
+          {/* Texto da lista */}
+          <div className='input-el'>
+            <label>Despedidas separadas por ; </label>
+            <input type={"text"} id='lista-texto' value={goodbye} onChange={(e)=>setGoodBye(e.target.value)}/>
+          </div>
+{/*
+        {/* lista 
         <div className='flex gap-1'>
           <input type={'checkbox'} onChange={()=>{
             document.querySelector('#lista')?.classList.toggle('hidden')
@@ -76,33 +135,34 @@ function App() {
           <p>Marque para enviar uma Lista</p>
         </div>
         <section id='lista' className='hidden justify-around'>
-          <div className='input-el'>
-            <label>Itens da lista: </label>
-            <input type={"text"} id='lista-itens' title='Separado com ";"'/>
-          </div>
-          {/* Rodapé da lista */}
-          <div className='input-el'>
-            <label>Rodapé da Lista: </label>
-            <input type={"text"} id='lista-rdp'/>
-          </div>
-          {/* Texto da lista */}
-          <div className='input-el'>
-            <label>Texto da Lista: </label>
-            <input type={"text"} id='lista-texto'/>
-          </div>
-          {/* Nome da Lista */}
+          {/* Nome da Lista 
           <div className='input-el'>
             <label>Título da lista: </label>
-            <input type={"text"} id='lista-titulo'/>
+            <input type={"text"} id='lista-titulo' value={listTitle} onChange={(e)=>setListTitle(e.target.value)}/>
           </div>
-          {/* descrição da lista */}
+          {/* Itens da Lista 
+          <div className='input-el'>
+            <label>Itens da lista: </label>
+            <input type={"text"} id='lista-itens' value={listItems} onChange={(e)=>setListItems(e.target.value)} title='Separado com ";"'/>
+          </div>
+          {/* Texto da lista 
+          <div className='input-el'>
+            <label>Texto da Lista: </label>
+            <input type={"text"} id='lista-texto' value={listText} onChange={(e)=>setListText(e.target.value)}/>
+          </div>
+          {/* descrição da lista 
           <div className='input-el'>
             <label>Descrição da Lista: </label>
-            <input type={"text"} id='lista-desc'/>
+            <input type={"text"} id='lista-desc' value={listDesc} onChange={(e)=>setListDesc(e.target.value)}/>
+          </div>
+          {/* Rodapé da lista 
+          <div className='input-el'>
+            <label>Rodapé da Lista: </label>
+            <input type={"text"} id='lista-rdp' value={listFooter} onChange={(e)=>setListFooter(e.target.value)} />
           </div>
         </section>
         
-        {/* Imagem */}
+        {/* Imagem 
         <div className='flex gap-1'>
           <input type={'checkbox'} onChange={()=>{
             document.querySelector('#imagem')?.classList.toggle('hidden')
@@ -114,29 +174,32 @@ function App() {
             <label>Imagem para envio: </label>
             <FileUploader className=''handleChange={handleImg} name="img" types={["PNG","JPEG","JPG","JFIF"]} />
           </div>
-        </section>
+        </section> 
 
-        {/* Botão */}
+        {/*{/* Botão }
         <div className='flex gap-1'>
           <input type={'checkbox'} onChange={()=>{
             document.querySelector('#botao')?.classList.toggle('hidden')
           }}/>
-          <p>Marque para enviar uma Imagem</p>
+          <p>Marque para enviar um Botão</p>
         </div>
         <section id='botao' className='hidden'>
+
+          {/* Rodapé do Botão }
           <div className='input-el'>
             <label>Rodapé do botão: </label>
-            <input type={"text"} id='btn-rdp'/>
+            <input type={"text"} id='btn-rdp' value={btnFooter} onChange={(e)=>setFilter(e.target.value)} />
           </div>
-          {/* Descrição do botão */}
+          {/* Descrição do botão }
           <div className='input-el'>
             <label>Descrição do botão: </label>
-            <input type={"text"} id='btn-desc'/>
+            <input type={"text"} id='btn-desc' value={btnDesc} onChange={(e)=>setFilter(e.target.value)} />
           </div>
-        </section>
+        </section>*/}
 
 
-          <input type={"submit"} />
+          <input type={"submit"} className='rounded bg-red-600 my-2 px-3 py-1'value={'Disparar'}/>
+          <input type={"button"} className='rounded bg-red-600 my-2 px-3 py-1' value={'Debug'} onClick={handleDebug}/>
       </form>
       </div>
     </div>
