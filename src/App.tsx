@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import { FileUploader } from 'react-drag-drop-files'
 import axios from 'axios'
 import './App.css'
+import { log } from 'console'
 
 
 interface mensagem {
@@ -20,6 +21,7 @@ function App() {
   const [url, setUrl] = useState("")
   const [instances, setInstances] = useState([])
   const [number, setNumber] = useState("")
+  const [numberArray, setNumberArray] = useState("")
   const [filter, setFilter] = useState("")
   const [messageBody, setMessageBody] = useState("")
   const [goodbyeArray, setGoodByeArray] = useState([""])
@@ -43,14 +45,16 @@ function App() {
     baseURL:url,
     proxy:undefined}
     )
-  
-    useEffect(()=>{
+  api.interceptors.request.use(
+    x=> {console.log(x)
+    return x}
+  )
+
       async function getInstances(){
         const iList = await api.get("/instance/list")
         setInstances(iList.data.data)
-      }
-      getInstances()
-    })
+      } 
+      
   async function handleMessage(){
     const splitg = greet.split(";");
     const splitgb = goodbye.split(";");
@@ -58,25 +62,36 @@ function App() {
     setGreetArray(splitg);
   }
   async function randomizer(){
-    var rand1 = Math.floor(Math.random() * (goodbyeArray.length - 0 + 1));
-    var rand2 = Math.floor(Math.random() * (greetArray.length - 0 + 1));
+
+    var rand1 = Math.floor(Math.random() * (goodbyeArray.length - 0 ));
+    var rand2 = Math.floor(Math.random() * (greetArray.length - 0));
     setRandGoodBye(goodbyeArray[rand1])
     setRandGreet(greetArray[rand2])
     setFullMessage([randGreet,messageBody,randGoodbye].join('\n'))
+    var rand = Math.floor(Math.random() * (instances.length - 0));
+    const key = instances[rand];
+    return {fullMessage,key}
   }
 
   async function handleForm(e:FormEvent){
   e.preventDefault();
-  await handleMessage();
-  var rand = Math.floor(Math.random() * (instances.length - 0 + 1));
-  const key = instances[rand];
   
-  await api.post(`/message/text?key=${key}`,
+  const splitn = number.split(';');
+  splitn.forEach(async(numero)=>{
+    let mensagem = (await randomizer()).fullMessage;
+    let chave = (await randomizer()).key;
+    await disparo(numero,mensagem,chave);
+  })
+  
+}
+async function disparo(numero:string,mensagem:string,chave:string){
+  await api.post(`/message/text?key=${chave}`,
   {
-    "id":number,
-    "message":fullMessage,
-  }).then((response)=>console.log(response))
-  }
+    "id":numero,
+    "message":mensagem,
+  }).then((response)=>console.log(response)).catch((err)=>console.log(err))
+  await new Promise(r => setTimeout(r, 3000));
+}
 
   async function handleInstance(){
     await axios.get(`${url}/instance/init?key=${indicador}&token=123`)
@@ -99,6 +114,8 @@ function App() {
   async function handleDebug(){
     await handleMessage();
     await randomizer();
+    await axios.get(`${url}/instance/restore`).then(res=>console.log(res))
+    await getInstances();
     console.log(
       {
         number,
