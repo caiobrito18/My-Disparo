@@ -2,7 +2,7 @@ import React from 'react'
 import { FormEvent, useEffect, useState } from 'react'
 import { FileUploader } from 'react-drag-drop-files'
 import axios from 'axios'
-import '../App.css'
+import '../css/App.css'
 import api from '../services/api'
 import { useNavigate } from 'react-router-dom'
 import Instancias from './Instancias'
@@ -222,10 +222,6 @@ async function disparo(numero:string,mensagem:string,chave:string){
 					<input type={"text"} id='btn-desc' value={btnDesc} onChange={(e)=>setBtnDesc(e.target.value)} />
 				</div>
 			</section>
-			<div className='flex gap-1'>
-				<label>Insira o nome da instância</label>
-				<input type={"text"} id='sessão' value={indicador} onChange={(e)=>setIndicador(e.target.value)} />
-			</div>
 			<div className='flex gap-2'>
 				<input type={"submit"} className='rounded bg-red-600 my-2 px-3 py-1'value={'Disparar'}/>
 				<input type={"button"} className='rounded bg-red-600 my-2 px-3 py-1'value={'instância'} onClick={()=>navigate('/instancias')}/>
