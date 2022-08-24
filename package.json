@@ -13,9 +13,11 @@
     "axios": "^0.27.2",
     "dotenv": "^16.0.1",
     "react": "^18.2.0",
+    "react-data-table-component": "^7.5.2",
     "react-dom": "^18.2.0",
     "react-drag-drop-files": "^2.3.7",
-    "react-router-dom": "^6.3.0"
+    "react-router-dom": "^6.3.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "^18.7.2",
