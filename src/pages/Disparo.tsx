@@ -1,4 +1,3 @@
-import React, { ChangeEvent } from 'react';
 import { FormEvent, useEffect, useState } from 'react';
 import { FileUploader } from 'react-drag-drop-files';
 import * as XLSX from 'xlsx';
@@ -7,13 +6,14 @@ import DataTable from 'react-data-table-component';
 import '../css/App.css';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import Instancias from './Instancias';
 
 const Disparo = () => {
   const navigate  = useNavigate()
   var numeros:any = []
-  
-  const [columns, setColumns] = useState([]);
-  const [data, setData] = useState([]);
+  const webhook = "https://n8n01.siriusalpha.com.br/webhook-test";
+  const [columns, setColumns] = useState<Array<any>>([]);
+  const [data, setData] = useState<Array<any>>([]);
   const [url, setUrl] = useState("")
   const [instances, setInstances] = useState([])
   const [number, setNumber] = useState("")
@@ -87,11 +87,14 @@ async function disparo(numero:string,mensagem:string,chave:string){
 }
 
   async function handleInstance(){
-    await axios.get(`${url}/instance/init?key=${indicador}&token=123`)
-    .then((response)=> {
-      console.log(response.data.qrcode.url)
-      window.open(response.data.qrcode.url)
-    })}
+    if(url == undefined){
+      return new Error
+    }
+    api(webhook).post("status",{
+      URL:url
+    })
+    
+  }
 
   const handleImg = (img:any) => {
   var reader = new FileReader();
@@ -146,18 +149,28 @@ async function disparo(numero:string,mensagem:string,chave:string){
         }
       }
       // prepare columns list from headers
-      const columns = headers.map(c => ({
+      const columns = headers.map((c,i)=> ({
         name: c,
-        selector: c,
+        selector: (row:any) => row.TELEFONE
       }));
-      setData(list);
-      setColumns(columns);
-      console.log(list);
-      console.log(columns);
+      // @ts-ignore
+      const data = list.map(({NOME,DOCUMENTO,ENDERECO,CEP, ...rest}) => {
+        return rest;
+      });
+      // @ts-ignore
+      const newCols = columns.filter((arr) => {
+        if (arr.name == 'TELEFONE'){
+          return arr
+        }
+      });
+      setData(data);
+      setColumns(newCols);
+      console.log("data:",data);
+      console.log("columns",newCols,columns);
     }
     // handle file upload
-    const handleFileUpload = e => {
-      const file = e.target.files[0];
+    const handleFileUpload = (e:any) => {
+      const file = e.target?.files[0];
       const reader = new FileReader();
       reader.onload = (evt) => {
         /* Parse data */
@@ -174,7 +187,7 @@ async function disparo(numero:string,mensagem:string,chave:string){
     }
 
   return (
-  <div className="App w-[100%] height-[90%] items-center justify-between">
+  <div className="App w-[100%] height-[90%] items-center justify-between flex">
   <div className=''>
     <form onSubmit={handleForm} id='disparo' className='items-start justify-between flex flex-col gap-2'> {/* coloca as informações de envio */} <div>
         <label>Url: </label>
@@ -187,6 +200,8 @@ async function disparo(numero:string,mensagem:string,chave:string){
         <label htmlFor="">Números para o disparo</label>
         <input type="file" name="csv" id="csvFile" accept=".csv,.xlsx,.xls"onChange={handleFileUpload} />
         <DataTable
+        className='w-[100px]'
+        theme='dark'
         pagination
         highlightOnHover
         columns={columns}
@@ -287,11 +302,14 @@ async function disparo(numero:string,mensagem:string,chave:string){
 			</section>
 			<div className='flex gap-2'>
 				<input type={"submit"} className='rounded bg-red-600 my-2 px-3 py-1'value={'Disparar'}/>
-				<input type={"button"} className='rounded bg-red-600 my-2 px-3 py-1'value={'instância'} onClick={()=>navigate('/instancias')}/>
+				<input type={"button"} className='rounded bg-red-600 my-2 px-3 py-1'value={'instância'} onClick={handleInstance}/>
 				<input type={"button"} className='rounded bg-red-600 my-2 px-3 py-1' value={'Debug'} onClick={handleDebug}/>
 			</div>
 		</form>
 	</div>
+  <div className='m-5'>
+  <Instancias/>
+  </div>
 </div>
   )
 }
