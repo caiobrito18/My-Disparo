@@ -1,20 +1,43 @@
 import React, { FormEvent, SetStateAction, useState } from 'react'
+import DataTable, { TableColumn } from 'react-data-table-component';
 import api from '../services/api'
 
-
-export interface Instance{
+type Instance ={
   instancia:string
 }
-interface instancias{
+type instancias = {
   ilist?:Array<string>;
 }
-
+type DataRow ={
+  sessao:string,
+  conexao:string,
+  name:string,
+  id:string,
+}
 const Instancias = ({ilist}:instancias) => {
   
+  const columns:TableColumn<DataRow>[] = [
+    {
+        name: 'sessão',
+        selector: row => row.sessao,
+    },
+    {
+      name: 'conexão',
+      selector: row => row.conexao,
+    },
+    {
+      name: 'id',
+      selector: row  => row.id,
+    },
+    {
+      name: 'name',
+      selector: row  => row.name,
+    }
+  ];
   let instance: Instance[];
   // @ts-ignore
     instance = ['hello','bomdia','2'];
-  const [instanceArray, setInstanceArray] = useState<Array<string> | undefined>([""]);
+  const [instanceArray, setInstanceArray] = useState<Array<DataRow>>([]);
   const [loading, setLoading] = useState(true);
   const [restored, setRestored] = useState(false);
   const [url, setUrl] = useState('');
@@ -23,9 +46,20 @@ const Instancias = ({ilist}:instancias) => {
     e.preventDefault()
     const req = api(url)
     await req.get('/instance/restore').then(x => setRestored(true))
-    await req.get('/instance/list').then(res=> ilist = (res.data.data))
-    setInstanceArray(ilist)
-    console.log(ilist)
+    await req.get('/instance/list?active=true').then((res)=> {
+      var ilist:Array<DataRow> = res.data.data.map((i:any,data:Array<DataRow>)=>{
+        data.push({
+          sessao:i.instance_key,
+          conexao:i.phone_connected,
+          name:i.user.name,
+          id:i.user.id
+        })
+        return data;
+      })
+      return ilist
+    }).then(r=>{setInstanceArray(r)})
+    
+    console.log(instanceArray)
   }
 
 
@@ -34,16 +68,22 @@ const Instancias = ({ilist}:instancias) => {
     <input type="text" className="focus:outline-none rounded"  name="url" value={url} onChange={(e)=>setUrl(e.target.value)}/>
     <section className=' h-20 bg-slate-800 self-center m-0 p-0 grid-rows-1'>
     <ul className='justify-items-start text-start'>
-    {instanceArray?.map((k:any,i:any)=>{
+    {/* {instanceArray?.map((k:any,i:any)=>{
           return(
             // @ts-ignore
             <li key={i}>
               <input type="checkbox" className='outline-none border-transparent' name={`instance ${i}`} />
-              {` ${k}`}
+              
             </li>
           )
         }
-    )}
+    )} */}
+    <DataTable
+    theme='dark'
+    columns={columns}
+    data={instanceArray}
+    pagination
+    />
     </ul>
     </section>
     <input type="submit" className="round h-10 w-20 bg-red-900" name="search"  value="listar"/>

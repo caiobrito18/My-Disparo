@@ -139,6 +139,7 @@ async function disparo(numero:string,mensagem:string,chave:string){
                 d = d.substring(d.length - 2, 1);
             }
             if (headers[j]) {
+              // @ts-ignore
               obj[headers[j]] = d;
             }
           }
@@ -174,12 +175,13 @@ async function disparo(numero:string,mensagem:string,chave:string){
       const reader = new FileReader();
       reader.onload = (evt) => {
         /* Parse data */
-        const bstr = evt.target.result;
+        const bstr = evt.target?.result;
         const wb = XLSX.read(bstr, { type: 'binary' });
         /* Get first worksheet */
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
-        /* Convert array of arrays */
+        /* Convert array of arrays*/
+        // @ts-ignore 
         const data = XLSX.utils.sheet_to_csv(ws, { header: 1 });
         processData(data);
       };
