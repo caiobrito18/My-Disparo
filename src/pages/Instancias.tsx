@@ -8,13 +8,13 @@ type Instance ={
 type instancias = {
   ilist?:Array<string>;
 }
-type DataRow ={
+interface DataRow {
   sessao:string,
   conexao:string,
   name:string,
   id:string,
 }
-const Instancias = ({ilist}:instancias) => {
+function useInstancias(){
   
   const columns:TableColumn<DataRow>[] = [
     {
@@ -46,24 +46,32 @@ const Instancias = ({ilist}:instancias) => {
     e.preventDefault()
     const req = api(url)
     await req.get('/instance/restore').then(x => setRestored(true))
-    await req.get('/instance/list?active=true').then((res)=> {
-      var ilist:Array<DataRow> = res.data.data.map((i:any,data:Array<DataRow>)=>{
+    await req.get('/instance/list?active=true').then((res)=>{
+      const slist = res.data.data
+      console.log(slist)
+      let data = [{
+        sessao:"",
+        conexao:"",
+        name:"",
+        id:""
+      }]
+      for(let i = 0; i < slist.length;i++){
         data.push({
-          sessao:i.instance_key,
-          conexao:i.phone_connected,
-          name:i.user.name,
-          id:i.user.id
-        })
-        return data;
-      })
-      return ilist
-    }).then(r=>{setInstanceArray(r)})
-    
+              sessao:slist[i].instance_key,
+              conexao:slist[i].phone_connected || "Conectado",
+              name:slist[i].user.name,
+              id:slist[i].user.id
+            })
+      }
+    data.shift();
+    return setInstanceArray(data)})
     console.log(instanceArray)
   }
 
 
-  return (
+  return {
+    
+    render:(
     <form onSubmit={(e)=>loadInstances(e,url)} className='align-middle justify-around p-0 m-0 h-[100%]'>
     <input type="text" className="focus:outline-none rounded"  name="url" value={url} onChange={(e)=>setUrl(e.target.value)}/>
     <section className=' h-20 bg-slate-800 self-center m-0 p-0 grid-rows-1'>
@@ -82,13 +90,14 @@ const Instancias = ({ilist}:instancias) => {
     theme='dark'
     columns={columns}
     data={instanceArray}
+    selectableRows
     pagination
     />
     </ul>
     </section>
     <input type="submit" className="round h-10 w-20 bg-red-900" name="search"  value="listar"/>
-    </form>
-  )
+    </form>)
+  }
 }
 
-export default Instancias
+export default useInstancias

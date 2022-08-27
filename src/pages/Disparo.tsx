@@ -6,10 +6,11 @@ import DataTable from 'react-data-table-component';
 import '../css/App.css';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import Instancias from './Instancias';
+import useInstancias from './Instancias';
 
 const Disparo = () => {
   const navigate  = useNavigate()
+  const { render } = useInstancias();
   var numeros:any = []
   const webhook = "https://n8n01.siriusalpha.com.br/webhook-test";
   const [columns, setColumns] = useState<Array<any>>([]);
@@ -24,9 +25,6 @@ const Disparo = () => {
   const [greetArray, setGreetArray] = useState([""])
   const [greet, setGreet] = useState("")
   const [goodbye, setGoodBye] = useState("") 
-  // const [randGreet, setRandGreet] = useState("")
-  // const [randGoodbye, setRandGoodBye] = useState("")
-  // const [fullMessage, setFullMessage] = useState("")
   const [indicador, setIndicador] = useState("")
   const [listTitle, setListTitle] = useState("")
   const [listItems, setListItems] = useState("")
@@ -53,14 +51,6 @@ const Disparo = () => {
     setGoodByeArray(splitgb);
     setGreetArray(splitg);
   }
-
-  // async function randomizer(){
-  //   setFullMessage([randGreet,messageBody,randGoodbye].join('\n'))
-  //   var rand = Math.floor(Math.random() * (instances.length - 0));
-  //   const key = instances[rand];
-  //   return {fullMessage,key}
-  // }
-
   async function handleForm(e:FormEvent){
   e.preventDefault();
   
@@ -310,7 +300,7 @@ async function disparo(numero:string,mensagem:string,chave:string){
 		</form>
 	</div>
   <div className='m-5'>
-  <Instancias/>
+  {render}
   </div>
 </div>
   )
