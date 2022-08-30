@@ -10,13 +10,13 @@ import useInstancias from './Instancias';
 
 const Disparo = () => {
   const navigate  = useNavigate()
-  const { render } = useInstancias();
+  const { render, sessoes } = useInstancias();
   var numeros:any = []
   const webhook = "https://n8n01.siriusalpha.com.br/webhook-test";
   const [columns, setColumns] = useState<Array<any>>([]);
   const [data, setData] = useState<Array<any>>([]);
   const [url, setUrl] = useState("")
-  const [instances, setInstances] = useState([])
+  const [disparado, setDisparado] = useState([])
   const [number, setNumber] = useState("")
   const [numberArray, setNumberArray] = useState("")
   const [filter, setFilter] = useState("")
@@ -39,11 +39,6 @@ const Disparo = () => {
     x=> {console.log(x)
     return x}
   )
-
-  async function getInstances(){
-    const iList = await req.get("/instance/list")
-    setInstances(iList.data.data)
-  } 
       
   async function handleMessage(){
     const splitg = greet.split(";");
@@ -58,22 +53,25 @@ const Disparo = () => {
   splitn.forEach(async(numero)=>{
     var rand1 = Math.floor(Math.random() * (goodbyeArray.length - 0 ));
     var rand2 = Math.floor(Math.random() * (greetArray.length - 0));
-    var rand3 = Math.floor(Math.random() * (instances.length - 0));
+    var rand3 = Math.floor(Math.random() * (sessoes.length - 0));
     let randGoodbye = (goodbyeArray[rand1])
     let randGreet = greetArray[rand2]
     let mensagem = [randGreet,messageBody,randGoodbye].join('\n')
-    let chave = instances[rand3];
+    console.log(numero)
+    let chave = sessoes[rand3].sessao;
+    await req.get('instance/restore')
     await disparo(numero,mensagem,chave);
+    await new Promise(r => setTimeout(r, 3000));
   })
   
 }
 async function disparo(numero:string,mensagem:string,chave:string){
+  console.log('mensagem enviada para: ',numero ,' foi ', mensagem,' por ', chave )
   await req.post(`/message/text?key=${chave}`,
   {
     "id":numero,
     "message":mensagem,
-  }).then((response)=>console.log(response)).catch((err)=>console.log(err))
-  await new Promise(r => setTimeout(r, 3000));
+  }).then((response)=>console.log(response)).catch((err)=>console.log(err))  
 }
 
   async function handleInstance(){
@@ -100,14 +98,13 @@ async function disparo(numero:string,mensagem:string,chave:string){
   async function handleDebug(){
     await handleMessage();
     await axios.get(`${url}/instance/restore`).then(res=>console.log(res))
-    await getInstances();
     console.log(
       {
         number,
         indicador,
         goodbyeArray,
         greetArray,
-        instances
+        sessoes
       }
     )
   }
@@ -184,13 +181,17 @@ async function disparo(numero:string,mensagem:string,chave:string){
     <form onSubmit={handleForm} id='disparo' className='items-start justify-between flex flex-col gap-2'> {/* coloca as informações de envio */} <div>
         <label>Url: </label>
         <input type={"text"} id='url' value={url} onChange={(e)=>setUrl(e.target.value)}/>
-      </div> {/* Número de Telefone do cliente */} <div className='flex flex-col'>
-        <label htmlFor="">Filtros para envios das mensagens: </label>
-        <input type="text" value={filter} onChange={(e)=>setFilter(e.target.value)}/> <button>Filtrar</button>
-      </div>
+      </div> 
+      {/* Número de Telefone do cliente */} 
       <div>
-        <label htmlFor="">Números para o disparo</label>
-        <input type="file" name="csv" id="csvFile" accept=".csv,.xlsx,.xls"onChange={handleFileUpload} />
+      <div className='flex gap-1'>
+				<input type={'checkbox'} onChange={()=>{
+            document.querySelector('#csvFile')?.classList.toggle('hidden')
+          }}/>
+				<p>Marque para enviar utilizando um arquivo ".CSV"</p>
+			</div>
+        <label htmlFor="">Números para o disparo</label><br/>
+        <input type="file" name="csv" id="csvFile" accept=".csv,.xlsx,.xls"onChange={handleFileUpload} className='hidden'/>
         <DataTable
         className='w-[100px]'
         theme='dark'
@@ -199,7 +200,17 @@ async function disparo(numero:string,mensagem:string,chave:string){
         columns={columns}
         data={data}
       />
-      </div> {/* coloca as informações de mensagem */} {/* Corpo da Mensagem */} <input type="text" value={number} onChange={(e)=>setNumber(e.target.value)}/> {/* Saudação */} <div className='input-el'>
+      <div className='flex flex-col'>
+        <label htmlFor="">Filtros para envios das mensagens: </label>
+        <input type="text" value={filter} onChange={(e)=>setFilter(e.target.value)}/>
+        <button className='rounded bg-red-600 my-2 px-3 py-1'>Filtrar</button>
+      </div>
+      </div> 
+      {/* coloca as informações de mensagem */}
+      {/* Corpo da Mensagem */}
+      <input type="text" value={number} onChange={(e)=>setNumber(e.target.value)}/> 
+      {/* Saudação */}
+      <div className='input-el'>
         <label>Saudações separadas por ; </label>
         <input type={"text"} id='lista-titulo' value={greet} onChange={(e)=>setGreet(e.target.value)}/>
       </div> {/* Corpo */} <div className='input-el h-40'>
@@ -212,8 +223,8 @@ async function disparo(numero:string,mensagem:string,chave:string){
 				<label>Despedidas separadas por ; </label>
 				<input type={"text"} id='lista-texto' value={goodbye} onChange={(e)=>setGoodBye(e.target.value)}/>
 			</div>
-
-        {/* lista */}
+{/* 
+        {/* lista 
         
 			<div className='flex gap-1'>
 				<input type={'checkbox'} onChange={()=>{
@@ -222,31 +233,31 @@ async function disparo(numero:string,mensagem:string,chave:string){
 				<p>Marque para enviar uma Lista</p>
 			</div>
 			<section id='lista' className='hidden justify-around'>
-          {/* Nome da Lista */}
+          {/* Nome da Lista *
           
 				<div className='input-el'>
 					<label>Título da lista: </label>
 					<input type={"text"} id='lista-titulo' value={listTitle} onChange={(e)=>setListTitle(e.target.value)}/>
 				</div>
-          {/* Itens da Lista */}
+          {/* Itens da Lista *
           
 				<div className='input-el'>
 					<label>Itens da lista: </label>
 					<input type={"text"} id='lista-itens' value={listItems} onChange={(e)=>setListItems(e.target.value)} title='Separado com ";"'/>
 				</div>
-          {/* Texto da lista */}
+          {/* Texto da lista *
           
 				<div className='input-el'>
 					<label>Texto da Lista: </label>
 					<input type={"text"} id='lista-texto' value={listText} onChange={(e)=>setListText(e.target.value)}/>
 				</div>
-          {/* descrição da lista */}
+          {/* descrição da lista *
           
 				<div className='input-el'>
 					<label>Descrição da Lista: </label>
 					<input type={"text"} id='lista-desc' value={listDesc} onChange={(e)=>setListDesc(e.target.value)}/>
 				</div>
-          {/* Rodapé da lista */}
+          {/* Rodapé da lista *
           
 				<div className='input-el'>
 					<label>Rodapé da Lista: </label>
@@ -254,7 +265,7 @@ async function disparo(numero:string,mensagem:string,chave:string){
 				</div>
 			</section>
         
-        {/* Imagem */}
+        {/* Imagem 
         
 			<div className='flex gap-1'>
 				<input type={'checkbox'} onChange={()=>{
@@ -269,7 +280,7 @@ async function disparo(numero:string,mensagem:string,chave:string){
 				</div>
 			</section> 
 
-        {/* Botão */}
+        {/* Botão 
         
 			<div className='flex gap-1'>
 				<input type={'checkbox'} onChange={()=>{
@@ -279,24 +290,24 @@ async function disparo(numero:string,mensagem:string,chave:string){
 			</div>
 			<section id='botao' className='hidden'>
 
-          {/* Rodapé do Botão */}
+          {/* Rodapé do Botão *
           
 				<div className='input-el'>
 					<label>Rodapé do botão: </label>
 					<input type={"text"} id='btn-rdp' value={btnFooter} onChange={(e)=>setBtnFooter(e.target.value)} />
 				</div>
-          {/* Descrição do botão */}
+          {/* Descrição do botão *
           
 				<div className='input-el'>
 					<label>Descrição do botão: </label>
 					<input type={"text"} id='btn-desc' value={btnDesc} onChange={(e)=>setBtnDesc(e.target.value)} />
 				</div>
-			</section>
+			</section>*/}
 			<div className='flex gap-2'>
 				<input type={"submit"} className='rounded bg-red-600 my-2 px-3 py-1'value={'Disparar'}/>
 				<input type={"button"} className='rounded bg-red-600 my-2 px-3 py-1'value={'instância'} onClick={handleInstance}/>
 				<input type={"button"} className='rounded bg-red-600 my-2 px-3 py-1' value={'Debug'} onClick={handleDebug}/>
-			</div>
+			</div> 
 		</form>
 	</div>
   <div className='m-5'>

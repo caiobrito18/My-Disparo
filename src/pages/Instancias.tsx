@@ -45,7 +45,7 @@ function useInstancias(){
   async function loadInstances(e:FormEvent, url:string){
     e.preventDefault()
     const req = api(url)
-    await req.get('/instance/restore').then(x => setRestored(true))
+    await req.get('/instance/restore')
     await req.get('/instance/list?active=true').then((res)=>{
       const slist = res.data.data
       console.log(slist)
@@ -58,7 +58,7 @@ function useInstancias(){
       for(let i = 0; i < slist.length;i++){
         data.push({
               sessao:slist[i].instance_key,
-              conexao:slist[i].phone_connected || "Conectado",
+              conexao:slist[i].phone_connected ? 'desconectado':'conectado',
               name:slist[i].user.name,
               id:slist[i].user.id
             })
@@ -70,12 +70,11 @@ function useInstancias(){
 
 
   return {
-    
+    sessoes:instanceArray.filter((x)=> {x.conexao != "false"; return x.sessao}),
     render:(
     <form onSubmit={(e)=>loadInstances(e,url)} className='align-middle justify-around p-0 m-0 h-[100%]'>
     <input type="text" className="focus:outline-none rounded"  name="url" value={url} onChange={(e)=>setUrl(e.target.value)}/>
     <section className=' h-20 bg-slate-800 self-center m-0 p-0 grid-rows-1'>
-    <ul className='justify-items-start text-start'>
     {/* {instanceArray?.map((k:any,i:any)=>{
           return(
             // @ts-ignore
@@ -93,9 +92,8 @@ function useInstancias(){
     selectableRows
     pagination
     />
-    </ul>
-    </section>
     <input type="submit" className="round h-10 w-20 bg-red-900" name="search"  value="listar"/>
+    </section>
     </form>)
   }
 }
