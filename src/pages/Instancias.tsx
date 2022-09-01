@@ -45,8 +45,8 @@ function useInstancias(){
   async function loadInstances(e:FormEvent, url:string){
     e.preventDefault()
     const req = api(url)
-    await req.get('/instance/restore')
-    await req.get('/instance/list?active=true').then((res)=>{
+    await req.get('/instance/list?active=true').then(async(res)=>{
+      if(res.data.data.phone_connected == undefined) await req.get('/instance/restore')
       const slist = res.data.data
       console.log(slist)
       let data = [{

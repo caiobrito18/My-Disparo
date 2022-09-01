@@ -59,7 +59,6 @@ const Disparo = () => {
     let mensagem = [randGreet,messageBody,randGoodbye].join('\n')
     console.log(numero)
     let chave = sessoes[rand3].sessao;
-    await req.get('instance/restore')
     await disparo(numero,mensagem,chave);
     await new Promise(r => setTimeout(r, 3000));
   })
