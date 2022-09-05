@@ -34,9 +34,7 @@ function useInstancias(){
       selector: row  => row.name,
     }
   ];
-  let instance: Instance[];
   // @ts-ignore
-    instance = ['hello','bomdia','2'];
   const [instanceArray, setInstanceArray] = useState<Array<DataRow>>([]);
   const [loading, setLoading] = useState(true);
   const [restored, setRestored] = useState(false);
