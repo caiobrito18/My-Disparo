@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { FileUploader } from 'react-drag-drop-files';
 import * as XLSX from 'xlsx';
 import axios from 'axios';
-import DataTable from 'react-data-table-component';
+import DataTable, { TableColumn } from 'react-data-table-component';
 import '../css/App.css';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -54,13 +54,14 @@ const Disparo = () => {
     var rand1 = Math.floor(Math.random() * (goodbyeArray.length - 0 ));
     var rand2 = Math.floor(Math.random() * (greetArray.length - 0));
     var rand3 = Math.floor(Math.random() * (sessoes.length - 0));
+    var rand4 = Math.floor(Math.random() * (10 - 5) + 10 );
     let randGoodbye = (goodbyeArray[rand1])
     let randGreet = greetArray[rand2]
     let mensagem = [randGreet,messageBody,randGoodbye].join('\n')
-    console.log(numero)
+    console.log(sessoes)
     let chave = sessoes[rand3].sessao;
     await disparo(numero,mensagem,chave);
-    await new Promise(r => setTimeout(r, 3000));
+    await new Promise(r => setTimeout(r, rand4*1000));
   })
   
 }
@@ -93,19 +94,30 @@ async function disparo(numero:string,mensagem:string,chave:string){
   console.log(base64data);
 }
   };
+  async function handleFilter(){
+    await req.get('/custom/numeros').then((res)=>{
+      const rows = Object.keys(res.data[0]);
+      //@ts-ignore
+      const cols = {
+        name:"Telefone",
+        selector: (row:any) => row.TELEFONE
+      }
+      setColumns([cols])
+      setData(res.data)
+    })
 
+  }
   async function handleDebug(){
     await handleMessage();
-    await axios.get(`${url}/instance/restore`).then(res=>console.log(res))
     console.log(
       {
         number,
         indicador,
         goodbyeArray,
         greetArray,
-        sessoes
       }
     )
+    console.log(sessoes[0])
   }
     // process CSV data
     const processData = (dataString:string) => {
@@ -202,12 +214,13 @@ async function disparo(numero:string,mensagem:string,chave:string){
       <div className='flex flex-col'>
         <label htmlFor="">Filtros para envios das mensagens: </label>
         <input type="text" value={filter} onChange={(e)=>setFilter(e.target.value)}/>
-        <button className='rounded bg-red-600 my-2 px-3 py-1'>Filtrar</button>
+        <button className='rounded bg-red-600 my-2 px-3 py-1' onClick={handleFilter}>Filtrar</button>
       </div>
       </div> 
+      <label> Números para envio de mensgens </label>
+      <input type="text" value={number} onChange={(e)=>setNumber(e.target.value)}/> 
       {/* coloca as informações de mensagem */}
       {/* Corpo da Mensagem */}
-      <input type="text" value={number} onChange={(e)=>setNumber(e.target.value)}/> 
       {/* Saudação */}
       <div className='input-el'>
         <label>Saudações separadas por ; </label>

@@ -1,5 +1,5 @@
 import React, { FormEvent, SetStateAction, useState } from 'react'
-import DataTable, { TableColumn } from 'react-data-table-component';
+import DataTable, { TableColumn, TableRow } from 'react-data-table-component';
 import api from '../services/api'
 
 type Instance ={
@@ -37,14 +37,18 @@ function useInstancias(){
   // @ts-ignore
   const [instanceArray, setInstanceArray] = useState<Array<DataRow>>([]);
   const [loading, setLoading] = useState(true);
-  const [restored, setRestored] = useState(false);
+  const [selected, setSelected] = useState<Array<any>>([]);
   const [url, setUrl] = useState('');
   
+  const handleSelected = ({selectedRows}:TableRow)=>{
+    //@ts-ignore
+    setSelected(selectedRows)
+  }
+
   async function loadInstances(e:FormEvent, url:string){
     e.preventDefault()
     const req = api(url)
     await req.get('/instance/list?active=true').then(async(res)=>{
-      if(res.data.data.phone_connected == undefined) await req.get('/instance/restore')
       const slist = res.data.data
       console.log(slist)
       let data = [{
@@ -54,9 +58,10 @@ function useInstancias(){
         id:""
       }]
       for(let i = 0; i < slist.length;i++){
+        console.log(slist[i].phone_connected);
         data.push({
               sessao:slist[i].instance_key,
-              conexao:slist[i].phone_connected ? 'desconectado':'conectado',
+              conexao:slist[i].phone_connected ? 'conectado':'desconectado',
               name:slist[i].user.name,
               id:slist[i].user.id
             })
@@ -68,26 +73,17 @@ function useInstancias(){
 
 
   return {
-    sessoes:instanceArray.filter((x)=> {x.conexao != "false"; return x.sessao}),
+    sessoes:selected,
     render:(
     <form onSubmit={(e)=>loadInstances(e,url)} className='align-middle justify-around p-0 m-0 h-[100%]'>
     <input type="text" className="focus:outline-none rounded"  name="url" value={url} onChange={(e)=>setUrl(e.target.value)}/>
     <section className=' h-20 bg-slate-800 self-center m-0 p-0 grid-rows-1'>
-    {/* {instanceArray?.map((k:any,i:any)=>{
-          return(
-            // @ts-ignore
-            <li key={i}>
-              <input type="checkbox" className='outline-none border-transparent' name={`instance ${i}`} />
-              
-            </li>
-          )
-        }
-    )} */}
     <DataTable
     theme='dark'
     columns={columns}
     data={instanceArray}
     selectableRows
+    onSelectedRowsChange={handleSelected}
     pagination
     />
     <input type="submit" className="round h-10 w-20 bg-red-900" name="search"  value="listar"/>
