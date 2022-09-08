@@ -6,7 +6,7 @@ import DataTable, { TableColumn } from 'react-data-table-component';
 import '../css/App.css';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import useInstancias from './Instancias';
+import useInstancias from '../components/Instancias';
 
 const Disparo = () => {
   const navigate  = useNavigate()
