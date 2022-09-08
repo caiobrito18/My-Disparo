@@ -97,7 +97,6 @@ async function disparo(numero:string,mensagem:string,chave:string){
   async function handleFilter(){
     await req.get('/custom/numeros').then((res)=>{
       const rows = Object.keys(res.data[0]);
-      //@ts-ignore
       const cols = {
         name:"Telefone",
         selector: (row:any) => row.TELEFONE

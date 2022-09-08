@@ -1,4 +1,4 @@
-import React, { FormEvent, SetStateAction, useState } from 'react'
+import React, { FormEvent, useState } from 'react'
 import DataTable, { TableColumn, TableRow } from 'react-data-table-component';
 import api from '../services/api'
 
@@ -14,7 +14,7 @@ interface DataRow {
   name:string,
   id:string,
 }
-function useInstancias(){
+export default function useInstancias(){
   
   const columns:TableColumn<DataRow>[] = [
     {
@@ -91,5 +91,3 @@ function useInstancias(){
     </form>)
   }
 }
-
-export default useInstancias
