@@ -1,8 +1,6 @@
-import { FormEvent, useEffect, useState } from 'react';
-import { FileUploader } from 'react-drag-drop-files';
+import { FormEvent, useState } from 'react';
 import * as XLSX from 'xlsx';
-import axios from 'axios';
-import DataTable, { TableColumn } from 'react-data-table-component';
+import DataTable from 'react-data-table-component';
 import '../css/App.css';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -96,7 +94,6 @@ async function disparo(numero:string,mensagem:string,chave:string){
   };
   async function handleFilter(){
     await req.get('/custom/numeros').then((res)=>{
-      const rows = Object.keys(res.data[0]);
       const cols = {
         name:"Telefone",
         selector: (row:any) => row.TELEFONE
@@ -213,7 +210,7 @@ async function disparo(numero:string,mensagem:string,chave:string){
       <div className='flex flex-col'>
         <label htmlFor="">Filtros para envios das mensagens: </label>
         <input type="text" value={filter} onChange={(e)=>setFilter(e.target.value)}/>
-        <button className='rounded bg-red-600 my-2 px-3 py-1' onClick={handleFilter}>Filtrar</button>
+        <button type="button" className='rounded bg-red-600 my-2 px-3 py-1' onClick={handleFilter}>Filtrar</button>
       </div>
       </div> 
       <label> Números para envio de mensgens </label>
