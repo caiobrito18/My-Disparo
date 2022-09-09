@@ -52,24 +52,24 @@ const Disparo = () => {
     var rand1 = Math.floor(Math.random() * (goodbyeArray.length - 0 ));
     var rand2 = Math.floor(Math.random() * (greetArray.length - 0));
     var rand3 = Math.floor(Math.random() * (sessoes.length - 0));
-    var rand4 = Math.floor(Math.random() * (10 - 5) + 10 );
     let randGoodbye = (goodbyeArray[rand1])
     let randGreet = greetArray[rand2]
     let mensagem = [randGreet,messageBody,randGoodbye].join('\n')
-    console.log(sessoes)
     let chave = sessoes[rand3].sessao;
     await disparo(numero,mensagem,chave);
-    await new Promise(r => setTimeout(r, rand4*1000));
   })
   
 }
 async function disparo(numero:string,mensagem:string,chave:string){
   console.log('mensagem enviada para: ',numero ,' foi ', mensagem,' por ', chave )
+  var rand4 = Math.floor(Math.random() * (10 - 5) + 10 );
+  await new Promise(r => setTimeout(r, rand4*1000));
   await req.post(`/message/text?key=${chave}`,
   {
     "id":numero,
     "message":mensagem,
   }).then((response)=>console.log(response)).catch((err)=>console.log(err))  
+  return console.log("disparo realizado com sucesso")
 }
 
   async function handleInstance(){
