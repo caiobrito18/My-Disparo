@@ -27,6 +27,6 @@ body {
 }
 @layer components{
   .input-el{
-    @apply flex m-2 gap-1 w-full flex-col h-10
+    @apply flex my-2 gap-1 w-full flex-col h-10
   }
 }

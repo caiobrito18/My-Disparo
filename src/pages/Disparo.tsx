@@ -13,6 +13,8 @@ const Disparo = () => {
   const [url, setUrl] = useState("")
   const [number, setNumber] = useState([])
   const [filter, setFilter] = useState("")
+  const [minWait, setMinWait] = useState("")
+  const [maxWait, setMaxWait] = useState("")
   const [messageBody, setMessageBody] = useState("")
   const [goodbyeArray, setGoodByeArray] = useState([""])
   const [greetArray, setGreetArray] = useState([""])
@@ -32,21 +34,34 @@ const Disparo = () => {
     setGoodByeArray(splitgb);
     setGreetArray(splitg);
   }
+
   async function handleForm(e:FormEvent){
   e.preventDefault();
-  
-  number.forEach(async(numero)=>{
-    var rand1 = Math.floor(Math.random() * (goodbyeArray.length - 0 ));
-    var rand2 = Math.floor(Math.random() * (greetArray.length - 0));
-    var rand3 = Math.floor(Math.random() * (sessoes.length - 0));
-    let randGoodbye = (goodbyeArray[rand1])
-    let randGreet = greetArray[rand2]
-    let mensagem = [randGreet,messageBody,randGoodbye].join('\n')
-    let chave = sessoes[rand3].sessao;
-    await disparo(numero,mensagem,chave);
-  })
-  
+    let sessions = sessoes.map((e)=>e.sessao)
+      req.post("/custom/disparo",{
+        MessageData:{
+        MessageBody:messageBody,
+        greets:greetArray,
+        goodbyes:goodbyeArray,
+        sessions:sessions
+        },
+        minWait:minWait,
+        maxWait:maxWait,
+        Numbers:number,
+      })
+  // number.forEach(async(numero)=>{
+  //   var rand1 = Math.floor(Math.random() * (goodbyeArray.length - 0 ));
+  //   var rand2 = Math.floor(Math.random() * (greetArray.length - 0));
+  //   var rand3 = Math.floor(Math.random() * (sessoes.length - 0));
+  //   let randGoodbye = (goodbyeArray[rand1])
+  //   let randGreet = greetArray[rand2]
+  //   let mensagem = [randGreet,messageBody,randGoodbye].join('\n')
+  //   let chave = sessoes[rand3].sessao;
+  //   await disparo(numero,mensagem,chave);
+  // }
+  // )
   }
+
   async function disparo(numero:string,mensagem:string,chave:string){
   console.log('mensagem enviada para: ',numero ,' foi ', mensagem,' por ', chave )
   var rand4 = Math.floor(Math.random() * (10 - 5) + 10 );
@@ -58,6 +73,7 @@ const Disparo = () => {
   }).then((response)=>console.log(response)).catch((err)=>console.log(err))  
   return console.log("disparo realizado com sucesso")
   }
+
   async function handleInstance(){
     if(url == undefined){
       return new Error
@@ -79,7 +95,10 @@ const Disparo = () => {
       }]
       setColumns(cols)
       setData(res.data)
-      const numberlist = res.data.map((a:any) => a.TELEFONE)
+      const numberlist = res.data.map((a:any) => {
+        if (a.TELEFONE.match(/^55.{10,11}/)) return a.TELEFONE
+        if (a.TELEFONE.match(/^[92].{10,11}|^[62].{10,11}/)) return `55${a.TELEFONE}`
+      })
       setNumber(numberlist)
     })
 
@@ -89,6 +108,7 @@ const Disparo = () => {
     console.log(
       {
         number,
+        sessoes,
         goodbyeArray,
         greetArray,
       }
@@ -192,8 +212,13 @@ const Disparo = () => {
         <button type="button" className='rounded bg-red-600 my-2 px-3 py-1' onClick={handleFilter}>Filtrar</button>
       </div>
       </div> 
-      <label> Números para envio de mensgens </label>
+      <label>Intervalo de envio entre mensagens</label>
       {/* <input type="text" value={number} onChange={(e)=>setNumber(e.target.value)}/>  */}
+      <div className="bg-slate500 flex justify-around align-middle">
+      <input type="number" value={minWait} className="w-full mx-1" onChange={(e)=>setMinWait(e.target.value)} placeholder='delay mínimo'/> 
+      <input type="number" value={maxWait} className="w-full mx-1" onChange={(e)=>setMaxWait(e.target.value)} placeholder='delay máximo'/> 
+      </div>
+
       {/* coloca as informações de mensagem */}
       {/* Corpo da Mensagem */}
       {/* Saudação */}
