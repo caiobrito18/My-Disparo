@@ -49,17 +49,6 @@ const Disparo = () => {
         maxWait:maxWait,
         Numbers:number,
       })
-  // number.forEach(async(numero)=>{
-  //   var rand1 = Math.floor(Math.random() * (goodbyeArray.length - 0 ));
-  //   var rand2 = Math.floor(Math.random() * (greetArray.length - 0));
-  //   var rand3 = Math.floor(Math.random() * (sessoes.length - 0));
-  //   let randGoodbye = (goodbyeArray[rand1])
-  //   let randGreet = greetArray[rand2]
-  //   let mensagem = [randGreet,messageBody,randGoodbye].join('\n')
-  //   let chave = sessoes[rand3].sessao;
-  //   await disparo(numero,mensagem,chave);
-  // }
-  // )
   }
 
   async function disparo(numero:string,mensagem:string,chave:string){
@@ -208,7 +197,10 @@ const Disparo = () => {
       />
       <div className='flex flex-col'>
         <label htmlFor="">Filtros para envios das mensagens: </label>
-        <input type="text" value={filter} onChange={(e)=>setFilter(e.target.value)}/>
+        <label htmlFor="">Cidade</label>
+        <label htmlFor="">Estado</label>
+        <label htmlFor="">Cep</label>
+        
         <button type="button" className='rounded bg-red-600 my-2 px-3 py-1' onClick={handleFilter}>Filtrar</button>
       </div>
       </div> 
