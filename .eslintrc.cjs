@@ -5,29 +5,25 @@ module.exports = {
     node: true
   },
   extends: [
-    'plugin:react/recommended',
-    'standard-with-typescript',
-    'eslint:recommended',
-    'plugin:@typescript-eslint/eslint-recommended',
-    'plugin:@typescript-eslint/recommended'
+    "plugin:react/jsx-runtime",
+    "standard-with-typescript",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
-  overrides: [
-  ],
+  overrides: [],
   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module'
+    ecmaVersion: "latest",
+    sourceType: "module"
   },
-  plugins: [
-    'react',
-    '@typescript-eslint'
-  ],
+  plugins: ["react", "@typescript-eslint"],
   rules: {
-    quotes: ['error', 'single'],
+    quotes: ["error", "double"],
     // we want to force semicolons
-    semi: ['error', 'always'],
+    semi: ["error", "always"],
     // we use 2 spaces to indent our code
-    indent: ['error', 2],
+    indent: ["error", 2],
     // we want to avoid extraneous spaces
-    'no-multi-spaces': ['error']
+    "no-multi-spaces": ["error"]
   }
 };
