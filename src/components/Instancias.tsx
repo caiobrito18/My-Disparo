@@ -2,82 +2,82 @@ import React, { FormEvent, useState } from "react";
 import DataTable, { TableColumn, TableRow } from "react-data-table-component";
 import api from "../services/api";
 
-type Instance = {
-  instancia: string;
-};
-type instancias = {
-  ilist?: Array<string>;
-};
-interface DataRow {
-  sessao: string;
-  conexao: string;
-  name: string;
-  id: string;
+interface Instance {
+  instancia: string
 }
-export default function useInstancias() {
-  const columns: TableColumn<DataRow>[] = [
+interface instancias {
+  ilist?: string[]
+}
+interface DataRow {
+  sessao: string
+  conexao: string
+  name: string
+  id: string
+}
+export default function useInstancias () {
+  const columns: Array<TableColumn<DataRow>> = [
     {
       name: "sessão",
-      selector: (row) => row.sessao,
+      selector: (row) => row.sessao
     },
     {
       name: "conexão",
-      selector: (row) => row.conexao,
+      selector: (row) => row.conexao
     },
     {
       name: "id",
-      selector: (row) => row.id,
+      selector: (row) => row.id
     },
     {
       name: "name",
-      selector: (row) => row.name,
-    },
-  ];
-  // @ts-ignore
-  const [instanceArray, setInstanceArray] = useState<Array<DataRow>>([]);
-  const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<Array<any>>([]);
+      selector: (row) => row.name
+    }
+  ]
+  // @ts-expect-error
+  const [instanceArray, setInstanceArray] = useState<DataRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selected, setSelected] = useState<any[]>([])
   const [url, setUrl] = useState("");
 
   const handleSelected = ({ selectedRows }: TableRow) => {
-    //@ts-ignore
-    setSelected(selectedRows);
+    // @ts-expect-error
+    setSelected(selectedRows)
   };
 
-  async function loadInstances(e: FormEvent, url: string) {
-    e.preventDefault();
-    const req = api(url);
+  async function loadInstances (e: FormEvent, url: string) {
+    e.preventDefault()
+    const req = api(url)
     await req.get("/instance/list?active=true").then(async (res) => {
-      const slist = res.data.data;
-      console.log(slist);
-      let data = [
+      const slist = res.data.data
+      console.log(slist)
+      const data = [
         {
-          sessao: "",
-          conexao: "",
-          name: "",
-          id: "",
-        },
-      ];
+          sessao: '',
+          conexao: '',
+          name: '',
+          id: '',
+        }
+      ]
       for (let i = 0; i < slist.length; i++) {
-        console.log(slist[i].phone_connected);
+        console.log(slist[i].phone_connected)
         data.push({
           sessao: slist[i].instance_key,
           conexao: slist[i].phone_connected ? "conectado" : "desconectado",
           name: slist[i].user.name,
-          id: slist[i].user.id,
-        });
+          id: slist[i].user.id
+        })
       }
-      data.shift();
-      return setInstanceArray(data);
+      data.shift()
+      return setInstanceArray(data)
     });
-    console.log(instanceArray);
+    console.log(instanceArray)
   }
 
   return {
     sessoes: selected,
     render: (
       <form
-        onSubmit={(e) => loadInstances(e, url)}
+        onSubmit={async (e) => await loadInstances(e, url)}
         className="align-middle justify-around p-0 m-0 h-[100%]"
       >
         <input
@@ -104,6 +104,6 @@ export default function useInstancias() {
           />
         </section>
       </form>
-    ),
-  };
+    )
+  }
 }
