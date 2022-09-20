@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from "react";
+import { FormEvent, useState } from "react";
 import DataTable, { TableColumn, TableRow } from "react-data-table-component";
 import api from "../services/api";
 
@@ -32,45 +32,45 @@ export default function useInstancias () {
       name: "name",
       selector: (row) => row.name
     }
-  ]
-  // @ts-expect-error
-  const [instanceArray, setInstanceArray] = useState<DataRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [selected, setSelected] = useState<any[]>([])
+  ];
+  // @ts-ignore
+  const [instanceArray, setInstanceArray] = useState<DataRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<any[]>([]);
   const [url, setUrl] = useState("");
 
   const handleSelected = ({ selectedRows }: TableRow) => {
     // @ts-expect-error
-    setSelected(selectedRows)
+    setSelected(selectedRows);
   };
 
   async function loadInstances (e: FormEvent, url: string) {
-    e.preventDefault()
-    const req = api(url)
+    e.preventDefault();
+    const req = api(url);
     await req.get("/instance/list?active=true").then(async (res) => {
-      const slist = res.data.data
-      console.log(slist)
+      const slist = res.data.data;
+      console.log(slist);
       const data = [
         {
-          sessao: '',
-          conexao: '',
-          name: '',
-          id: '',
+          sessao: "",
+          conexao: "",
+          name: "",
+          id: ""
         }
-      ]
+      ];
       for (let i = 0; i < slist.length; i++) {
-        console.log(slist[i].phone_connected)
+        console.log(slist[i].phone_connected);
         data.push({
           sessao: slist[i].instance_key,
           conexao: slist[i].phone_connected ? "conectado" : "desconectado",
           name: slist[i].user.name,
           id: slist[i].user.id
-        })
+        });
       }
-      data.shift()
-      return setInstanceArray(data)
+      data.shift();
+      return setInstanceArray(data);
     });
-    console.log(instanceArray)
+    console.log(instanceArray);
   }
 
   return {
@@ -105,5 +105,5 @@ export default function useInstancias () {
         </section>
       </form>
     )
-  }
+  };
 }

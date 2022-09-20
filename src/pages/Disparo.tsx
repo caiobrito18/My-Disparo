@@ -1,12 +1,16 @@
-import { Component, FormEvent, useEffect, useState } from "react";
-import * as XLSX from "xlsx";
+import {
+  Checkbox,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText
+} from "@mui/material";
+import { FormEvent, useState } from "react";
 import DataTable from "react-data-table-component";
+import * as XLSX from "xlsx";
+import useInstancias from "../components/Instancias";
 import "../css/App.css";
 import api from "../services/api";
-import useInstancias from "../components/Instancias";
-import { Checkbox, List, ListItemButton, ListItemIcon, ListItemText, MenuItem, Modal } from "@mui/material";
-import { AxiosResponse } from "axios";
-import { Box } from "@mui/system";
 
 const Disparo = () => {
   const { render, sessoes } = useInstancias();
@@ -14,7 +18,6 @@ const Disparo = () => {
   const [data, setData] = useState<any[]>([]);
   const [url, setUrl] = useState("");
   const [number, setNumber] = useState([]);
-  const [filter, setFilter] = useState({});
   const [minWait, setMinWait] = useState("");
   const [maxWait, setMaxWait] = useState("");
   const [messageBody, setMessageBody] = useState("");
@@ -22,34 +25,31 @@ const Disparo = () => {
   const [greetArray, setGreetArray] = useState([""]);
   const [greet, setGreet] = useState("");
   const [goodbye, setGoodBye] = useState("");
-  const [states, setStates] = useState<Array<string>>([]);
-  const [selectedStates, setselectedStates] = useState<Array<string>>([]);
+  const [states, setStates] = useState<string[]>([]);
+  const [selectedStates, setselectedStates] = useState<string[]>([]);
   const [cities, setCities] = useState([]);
-  const [selesctedCities, setSelectedCities] = useState(0);
-  const req = api(url)
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
+  const [cep, setCep] = useState("");
+  const req = api(url);
 
-  async function handleStates(){
-    // @ts-ignore
-    const data = await (await req.get<Array<string>>("custom/states")).data;
-    const states = data.map((x:any) => x.UF)
-    console.log(states)
-    setStates(states)
-    return
-  };
+  async function handleStates () {
+    const data = (await req.get<string[]>("custom/states")).data;
+    const states = data.map((x: any) => x.UF);
+    console.log(states);
+    setStates(states);
+  }
 
-
-
-  async function handleMessage () {
+  function handleMessage () {
     const splitg = greet.split(";");
     const splitgb = goodbye.split(";");
-    setGoodByeArray(splitgb)
-    setGreetArray(splitg)
+    setGoodByeArray(splitgb);
+    setGreetArray(splitg);
   }
 
   async function handleForm (e: FormEvent) {
-    e.preventDefault()
-    const sessions = sessoes.map((e) => e.sessao)
-    req.post("/custom/disparo", {
+    e.preventDefault();
+    const sessions = sessoes.map((e) => e.sessao);
+    await req.post("/custom/disparo", {
       MessageData: {
         MessageBody: messageBody,
         greets: greetArray,
@@ -59,125 +59,151 @@ const Disparo = () => {
       minWait,
       maxWait,
       Numbers: number
-    })
+    });
   }
 
-  async function handleInstance () {
+  function handleInstance () {
     if (url == undefined) {
-      return new Error()
+      return new Error();
     }
   }
   async function handleFilter () {
-    await req.get("/custom/numeros").then((res) => {
+    console.log(selectedCities.length);
+    await req.post("/custom/numeros",
+      {
+        filter: {
+          uf: (selectedStates.length !== 0 ? selectedStates : undefined),
+          cid: (selectedCities.length !== 0 ? selectedCities : undefined),
+          cep: cep.length !== 0 ? cep : undefined
+        },
+        limit: 110
+      }).then((res) => {
       const cols = [
         {
           name: "Telefone",
           selector: (row: any) => row.TELEFONE
         },
         {
-          name: "cidade",
+          name: "Cidade",
           selector: (row: any) => row.CID_ABREV
+        },
+        {
+          name: "Bairro",
+          selector: (row: any) => row.BAIRRO
         }
-      ]
-      setColumns(cols)
-      setData(res.data)
+      ];
+      setColumns(cols);
+      setData(res.data);
       const numberlist = res.data.map((a: any) => {
-        if (a.TELEFONE.match(/^55.{10,11}/)) return a.TELEFONE
-        if (a.TELEFONE.match(/^[92].{10,11}|^[62].{10,11}/)) { return `55${a.TELEFONE}` }
-      })
-      setNumber(numberlist)
+        if (a.TELEFONE.match(/^55.{10,11}/)) return a.TELEFONE;
+        if (a.TELEFONE.match(/^[92].{10,11}|^[62].{10,11}/)) {
+          return `55${a.TELEFONE}`;
+        }
+      });
+      setNumber(numberlist);
     });
   }
-  async function handleDebug () {
-    await handleMessage()
+  function handleDebug () {
+    handleMessage();
     console.log({
       number,
       sessoes,
       goodbyeArray,
       greetArray
-    })
+    });
   }
   // process CSV data
   const processData = (dataString: string) => {
-    const dataStringLines = dataString.split(/\r\n|\n/)
+    const dataStringLines = dataString.split(/\r\n|\n/);
     const headers = dataStringLines[0].split(
       /,(?![^"]*"(?:(?:[^"]*"){2})*[^"]*$)/
-    )
-    const list = []
+    );
+    const list = [];
     for (let i = 1; i < dataStringLines.length; i++) {
       const row = dataStringLines[i].split(
         /,(?![^"]*"(?:(?:[^"]*"){2})*[^"]*$)/
-      )
+      );
       if (headers && row.length == headers.length) {
-        const obj = {}
+        const obj = {};
         for (let j = 0; j < headers.length; j++) {
-          let d = row[j]
+          let d = row[j];
           if (d.length > 0) {
-            if (d[0] == '"') d = d.substring(1, d.length - 1)
-            if (d[d.length - 1] == '"') d = d.substring(d.length - 2, 1)
+            if (d[0] == "\"") d = d.substring(1, d.length - 1);
+            if (d[d.length - 1] == "\"") d = d.substring(d.length - 2, 1);
           }
           if (headers[j]) {
             // @ts-expect-error
-            obj[headers[j]] = d
+            obj[headers[j]] = d;
           }
         }
         // remove the blank rows
         if (Object.values(obj).filter((x) => x).length > 0) {
-          list.push(obj)
+          list.push(obj);
         }
       }
     }
     // prepare columns list from headers
-    const columns = headers.map((c, i) => ({
+    const columns = headers.map((c) => ({
       name: c,
       selector: (row: any) => row.TELEFONE
-    }))
-    // @ts-expect-error
-    const data = list.map(({ NOME, DOCUMENTO, ENDERECO, CEP, ...rest }) => rest)
+    }));
+    const data = list.map(
+      // @ts-ignore
+      ({ NOME, DOCUMENTO, ENDERECO, CEP, ...rest }) => rest
+    );
     const newCols = columns.filter((arr) => {
       if (arr.name == "TELEFONE") {
-        return arr
+        return arr;
       }
-    })
-    setData(data)
-    setColumns(newCols)
-    console.log("data:", data)
-    console.log("columns", newCols, columns)
+    });
+    setData(data);
+    setColumns(newCols);
+    console.log("data:", data);
+    console.log("columns", newCols, columns);
   };
   // handle file upload
   const handleFileUpload = (e: any) => {
-    const file = e.target?.files[0]
-    const reader = new FileReader()
+    const file = e.target?.files[0];
+    const reader = new FileReader();
     reader.onload = (evt) => {
       /* Parse data */
-      const bstr = evt.target?.result
-      const wb = XLSX.read(bstr, { type: "binary" })
+      const bstr = evt.target?.result;
+      const wb = XLSX.read(bstr, { type: "binary" });
       /* Get first worksheet */
-      const wsname = wb.SheetNames[0]
-      const ws = wb.Sheets[wsname]
+      const wsname = wb.SheetNames[0];
+      const ws = wb.Sheets[wsname];
       /* Convert array of arrays */
       // @ts-expect-error
-      const data = XLSX.utils.sheet_to_csv(ws, { header: 1 })
-      processData(data)
+      const data = XLSX.utils.sheet_to_csv(ws, { header: 1 });
+      processData(data);
     };
-    reader.readAsBinaryString(file)
+    reader.readAsBinaryString(file);
   };
 
-  const toggleCheck = async(field:string,
-    index:number,
-    value:string)=>{
-    let newSelection = [...selectedStates]
-    if (selectedStates.includes(value)){
-      setselectedStates(newSelection.filter((x)=> x != value))
+  const toggleStates = async (field: string, index: number, value: string) => {
+    const newSelection = [...selectedStates];
+    if (selectedStates.includes(value)) {
+      setselectedStates(newSelection.filter((x) => x != value));
     } else {
-      newSelection.push(value)
-      setselectedStates(newSelection)
+      newSelection.push(value);
+      setselectedStates(newSelection);
     }
 
-    const data = (await req.post("custom/cids",{uf: newSelection})).data
-    const cities = data.map((x:any)=> x.CIDADE)
-    setCities(cities)
-  }
+    const data = (await req.post("custom/cids", { uf: newSelection })).data;
+    const cities = data.map((x: any) => x.CIDADE);
+    setCities(cities);
+  };
+
+  const toggleCities = (field: string, index: number, value: string) => {
+    const newSelection = [...selectedCities];
+    if (selectedCities.includes(value)) {
+      setSelectedCities(newSelection.filter((x) => x != value));
+    } else {
+      newSelection.push(value);
+      setSelectedCities(newSelection);
+    }
+    console.log(newSelection);
+  };
 
   return (
     <div className="App w-[100%] height-[90%] items-center justify-between flex">
@@ -196,12 +222,13 @@ const Disparo = () => {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
-              <input
+            <input
               type={"button"}
               className="rounded bg-red-600 my-2 px-3 py-1"
               value={"Carregar Filtros"}
               onClick={handleStates}
-            />          </div>
+            />
+          </div>
           {/* Número de Telefone do cliente */}
           <div>
             <div className="flex gap-1">
@@ -237,55 +264,60 @@ const Disparo = () => {
               <label htmlFor="">Filtros para envios das mensagens: </label>
               <label htmlFor="">Estado</label>
               <div className="w-full h-32 overflow-scroll">
-              <List>
-                {states.map((k: string, i: number) => (
-                  <ListItemButton
-                    key={i}
-                    role={undefined}
-                    onClick={() => toggleCheck("state",i,k)}
-                  >
-                    <ListItemIcon>
-                      <Checkbox
-                        edge="start"
-                        checked={selectedStates.includes(k)}
-                        tabIndex={-1}
-                        disableRipple
-                      />
-                    </ListItemIcon>
-                    <ListItemText id={k} primary={`${k}`} />
-                  </ListItemButton>
-                ))}
-              </List>
+                <List>
+                  {states.map((k: string, i: number) => (
+                    <ListItemButton
+                      key={i}
+                      role={undefined}
+                      onClick={async () => await toggleStates("state", i, k)}
+                    >
+                      <ListItemIcon>
+                        <Checkbox
+                          edge="start"
+                          checked={selectedStates.includes(k)}
+                          tabIndex={-1}
+                          disableRipple
+                        />
+                      </ListItemIcon>
+                      <ListItemText id={k} primary={`${k}`} />
+                    </ListItemButton>
+                  ))}
+                </List>
               </div>
               <label htmlFor="">Cidade</label>
               <div className="w-full h-32 overflow-scroll">
-              <List>
-                {cities.map((k: string, i: number) => (
-                  <ListItemButton
-                    key={i}
-                    role={undefined}
-                    onClick={() => toggleCheck("state",i,k)}
-                  >
-                    <ListItemIcon>
-                      <Checkbox
-                        edge="start"
-                        checked={selectedStates.includes(k)}
-                        tabIndex={-1}
-                        disableRipple
-                      />
-                    </ListItemIcon>
-                    <ListItemText id={k} primary={`${k}`} />
-                  </ListItemButton>
-                ))}
-              </List>
+                <List>
+                  {cities.map((k: string, i: number) => (
+                    <ListItemButton
+                      key={i}
+                      role={undefined}
+                      onClick={() => toggleCities("state", i, k)}
+                    >
+                      <ListItemIcon>
+                        <Checkbox
+                          edge="start"
+                          checked={selectedCities.includes(k)}
+                          tabIndex={-1}
+                          disableRipple
+                        />
+                      </ListItemIcon>
+                      <ListItemText id={k} primary={`${k}`} />
+                    </ListItemButton>
+                  ))}
+                </List>
               </div>
               <label htmlFor="">Cep</label>
-
+              <input
+                type={"text"}
+                id="cep"
+                value={cep}
+                onChange={(e) => setCep(e.target.value)}
+              />
               <button
                 type="button"
                 className="rounded bg-red-600 my-2 px-3 py-1"
                 onClick={handleFilter}
-                >
+              >
                 Filtrar
               </button>
             </div>
@@ -364,7 +396,7 @@ const Disparo = () => {
       </div>
       <div className="m-5">{render}</div>
     </div>
-  )
+  );
 };
 
-export default Disparo
+export default Disparo;
