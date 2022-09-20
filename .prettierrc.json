@@ -1,0 +1,9 @@
+{
+  "semi": true,
+  "singleQuote": false,
+  "trailingComma": "none",
+  "editorconfig": true,
+  "jsxSingleQuote":false,
+  "bracketSpacing": true,
+  "parser":"typescript"
+}
