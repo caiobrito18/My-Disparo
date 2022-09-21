@@ -30,6 +30,7 @@ const Disparo = () => {
   const [cities, setCities] = useState([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [cep, setCep] = useState("");
+  const [limit, setLimit] = useState<number | undefined>(undefined);
   const req = api(url);
 
   async function handleStates () {
@@ -76,7 +77,7 @@ const Disparo = () => {
           cid: (selectedCities.length !== 0 ? selectedCities : undefined),
           cep: cep.length !== 0 ? cep : undefined
         },
-        limit: 110
+        limit
       }).then((res) => {
       const cols = [
         {
@@ -312,6 +313,13 @@ const Disparo = () => {
                 id="cep"
                 value={cep}
                 onChange={(e) => setCep(e.target.value)}
+              />
+              <label htmlFor="">Limite</label>
+              <input
+                type={"text"}
+                id="cep"
+                value={limit}
+                onChange={(e) => setLimit(Number(e.target.value))}
               />
               <button
                 type="button"
