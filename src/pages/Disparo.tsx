@@ -30,8 +30,20 @@ const Disparo = () => {
   const [cities, setCities] = useState([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [cep, setCep] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [end, setEnd] = useState("");
+  const [comp, setComp] = useState("");
   const [limit, setLimit] = useState<number | undefined>(undefined);
   const req = api(url);
+
+  const customStyles = {
+    cells: {
+      style: {
+        width: "200px",
+        justifyContent: "center"
+      }
+    }
+  };
 
   async function handleStates () {
     const data = (await req.get<string[]>("custom/states")).data;
@@ -75,7 +87,10 @@ const Disparo = () => {
         filter: {
           uf: (selectedStates.length !== 0 ? selectedStates : undefined),
           cid: (selectedCities.length !== 0 ? selectedCities : undefined),
-          cep: cep.length !== 0 ? cep : undefined
+          cep: cep.length !== 0 ? cep : undefined,
+          bairro: bairro.length !== 0 ? bairro : undefined,
+          endereco: end.length !== 0 ? end : undefined,
+          complemento: comp.length !== 0 ? comp : undefined
         },
         limit
       }).then((res) => {
@@ -258,6 +273,7 @@ const Disparo = () => {
               theme="dark"
               pagination
               highlightOnHover
+              customStyles={customStyles}
               columns={columns}
               data={data}
             />
@@ -321,6 +337,28 @@ const Disparo = () => {
                 value={limit}
                 onChange={(e) => setLimit(Number(e.target.value))}
               />
+              <label htmlFor="">Bairro</label>
+              <input
+                type={"text"}
+                id="cep"
+                value={bairro}
+                onChange={(e) => setBairro(e.target.value)}
+              />
+              <label htmlFor="">Endereço</label>
+              <input
+                type={"text"}
+                id="cep"
+                value={end}
+                onChange={(e) => setEnd(e.target.value)}
+              />
+              <label htmlFor="">Complemento</label>
+              <input
+                type={"text"}
+                id="cep"
+                value={comp}
+                onChange={(e) => setComp(e.target.value)}
+              />
+
               <button
                 type="button"
                 className="rounded bg-red-600 my-2 px-3 py-1"
