@@ -4,7 +4,9 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "noImplicitAny": false,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "lib": ["es6", "dom"],
+    "strict": true
   },
   "include": ["vite.config.ts"]
 }

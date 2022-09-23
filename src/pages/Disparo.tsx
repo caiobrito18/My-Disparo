@@ -1,15 +1,21 @@
 import {
+  Button,
   Checkbox,
-  List,
+  FilledInput,
+  FormControl,
+  FormControlLabel,
+  FormLabel, List,
   ListItemButton,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  ThemeProvider
 } from "@mui/material";
 import { FormEvent, useState } from "react";
 import DataTable from "react-data-table-component";
 import * as XLSX from "xlsx";
 import useInstancias from "../components/Instancias";
 import "../css/App.css";
+import { theme } from "../css/theme";
 import api from "../services/api";
 
 const Disparo = () => {
@@ -223,50 +229,53 @@ const Disparo = () => {
 
   return (
     <div className="App w-[100%] height-[90%] items-center justify-between flex">
-      <div className="">
+      <ThemeProvider theme={theme}>
         <form
           onSubmit={handleForm}
           id="disparo"
           className="items-start justify-between flex flex-col gap-2"
         >
           {/* coloca as informações de envio */}
-          <div>
-            <label>Url: </label>
-            <input
+          <FormControl sx={{ flexDirection: "row" }} >
+            <FormLabel>Url: </FormLabel>
+            <FilledInput
               type={"text"}
-              id="url"
               value={url}
+              sx={{ height: "2rem" }}
               onChange={(e) => setUrl(e.target.value)}
+              autoComplete="url"
             />
-            <input
+            <Button
               type={"button"}
-              className="rounded bg-red-600 my-2 px-3 py-1"
+              sx={{ bgcolor: "primary.main", ":hover": { bgcolor: "primary.light" } }}
               value={"Carregar Filtros"}
+              variant="contained"
               onClick={handleStates}
-            />
-          </div>
+            >Carregar filtros</Button>
+
+          </FormControl>
           {/* Número de Telefone do cliente */}
-          <div>
-            <div className="flex gap-1">
-              <input
-                type={"checkbox"}
-                onChange={() => {
-                  document
-                    .querySelector("#csvFile")
-                    ?.classList.toggle("hidden");
-                }}
-              />
-              <p>Marque para enviar utilizando um arquivo ".CSV"</p>
-            </div>
-            <label htmlFor="">Números para o disparo</label>
-            <br />
+          <FormControl>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  onChange={() => {
+                    document
+                      .querySelector("#csvFile")
+                      ?.classList.toggle("hidden");
+                  }}
+                />}
+              value="envio de arquivos"
+              label="Marque para enviar utilizando um arquivo '.CSV'"
+              labelPlacement="end"
+            />
             <input
               type="file"
               name="csv"
               id="csvFile"
               accept=".csv,.xlsx,.xls"
               onChange={handleFileUpload}
-              className="hidden"
+              className="hidden mb-4"
             />
             <DataTable
               className="w-[100px]"
@@ -324,35 +333,35 @@ const Disparo = () => {
                 </List>
               </div>
               <label htmlFor="">Cep</label>
-              <input
+              <FilledInput
                 type={"text"}
                 id="cep"
                 value={cep}
                 onChange={(e) => setCep(e.target.value)}
               />
               <label htmlFor="">Limite</label>
-              <input
+              <FilledInput
                 type={"text"}
                 id="cep"
                 value={limit}
                 onChange={(e) => setLimit(Number(e.target.value))}
               />
               <label htmlFor="">Bairro</label>
-              <input
+              <FilledInput
                 type={"text"}
                 id="cep"
                 value={bairro}
                 onChange={(e) => setBairro(e.target.value)}
               />
               <label htmlFor="">Endereço</label>
-              <input
+              <FilledInput
                 type={"text"}
                 id="cep"
                 value={end}
                 onChange={(e) => setEnd(e.target.value)}
               />
               <label htmlFor="">Complemento</label>
-              <input
+              <FilledInput
                 type={"text"}
                 id="cep"
                 value={comp}
@@ -367,18 +376,18 @@ const Disparo = () => {
                 Filtrar
               </button>
             </div>
-          </div>
+          </FormControl>
           <label>Intervalo de envio entre mensagens</label>
-          {/* <input type="text" value={number} onChange={(e)=>setNumber(e.target.value)}/>  */}
+          {/* <FilledInput type="text" value={number} onChange={(e)=>setNumber(e.target.value)}/>  */}
           <div className="bg-slate500 flex justify-around align-middle">
-            <input
+            <FilledInput
               type="number"
               value={minWait}
               className="w-full mx-1"
               onChange={(e) => setMinWait(e.target.value)}
               placeholder="delay mínimo"
             />
-            <input
+            <FilledInput
               type="number"
               value={maxWait}
               className="w-full mx-1"
@@ -391,7 +400,7 @@ const Disparo = () => {
           {/* Saudação */}
           <div className="input-el">
             <label>Saudações separadas por ; </label>
-            <input
+            <FilledInput
               type={"text"}
               id="lista-titulo"
               value={greet}
@@ -412,7 +421,7 @@ const Disparo = () => {
           {/* Despedidas */}
           <div className="input-el">
             <label>Despedidas separadas por ; </label>
-            <input
+            <FilledInput
               type={"text"}
               id="lista-texto"
               value={goodbye}
@@ -420,18 +429,18 @@ const Disparo = () => {
             />
           </div>
           <div className="flex gap-2">
-            <input
+            <FilledInput
               type={"submit"}
               className="rounded bg-red-600 my-2 px-3 py-1"
               value={"Disparar"}
             />
-            <input
+            <FilledInput
               type={"button"}
               className="rounded bg-red-600 my-2 px-3 py-1"
               value={"instância"}
               onClick={handleInstance}
             />
-            <input
+            <FilledInput
               type={"button"}
               className="rounded bg-red-600 my-2 px-3 py-1"
               value={"Debug"}
@@ -439,7 +448,7 @@ const Disparo = () => {
             />
           </div>
         </form>
-      </div>
+      </ThemeProvider>
       <div className="m-5">{render}</div>
     </div>
   );

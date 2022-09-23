@@ -2,18 +2,13 @@ import { FormEvent, useState } from "react";
 import DataTable, { TableColumn, TableRow } from "react-data-table-component";
 import api from "../services/api";
 
-interface Instance {
-  instancia: string
-}
-interface instancias {
-  ilist?: string[]
-}
 interface DataRow {
   sessao: string
   conexao: string
   name: string
   id: string
 }
+
 export default function useInstancias () {
   const columns: Array<TableColumn<DataRow>> = [
     {
@@ -35,7 +30,6 @@ export default function useInstancias () {
   ];
   // @ts-ignore
   const [instanceArray, setInstanceArray] = useState<DataRow[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<any[]>([]);
   const [url, setUrl] = useState("");
 
@@ -47,7 +41,7 @@ export default function useInstancias () {
   async function loadInstances (e: FormEvent, url: string) {
     e.preventDefault();
     const req = api(url);
-    await req.get("/instance/list?active=true").then(async (res) => {
+    await req.get("/instance/list?active=true").then((res) => {
       const slist = res.data.data;
       console.log(slist);
       const data = [
