@@ -1,5 +1,7 @@
+import { WhatsApp } from "@mui/icons-material";
+import { Box, Typography } from "@mui/material";
 import { FormEvent, useState } from "react";
-import DataTable, { TableColumn, TableRow } from "react-data-table-component";
+import { TableColumn, TableRow } from "react-data-table-component";
 import api from "../services/api";
 
 interface DataRow {
@@ -7,6 +9,9 @@ interface DataRow {
   conexao: string
   name: string
   id: string
+}
+interface CardProps{
+
 }
 
 export default function useInstancias () {
@@ -69,35 +74,23 @@ export default function useInstancias () {
 
   return {
     sessoes: selected,
-    render: (
-      <form
-        onSubmit={async (e) => await loadInstances(e, url)}
-        className="align-middle justify-around p-0 m-0 h-[100%]"
-      >
-        <input
-          type="text"
-          className="focus:outline-none rounded"
-          name="url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-        />
-        <section className=" h-20 bg-slate-800 self-center m-0 p-0 grid-rows-1">
-          <DataTable
-            theme="dark"
-            columns={columns}
-            data={instanceArray}
-            selectableRows
-            onSelectedRowsChange={handleSelected}
-            pagination
-          />
-          <input
-            type="submit"
-            className="round h-10 w-20 bg-red-900"
-            name="search"
-            value="listar"
-          />
-        </section>
-      </form>
+    Card:()=>(
+      <Box sx={{
+        width:200,
+        height:100,
+        borderRadius:"15px",
+        backgroundColor:"primary.dark",
+        p:2,
+        display:'flex',
+        flexDirection:"column",
+        alignItems:"start"
+      }}>
+        <Box sx={{display:'flex'}}>
+        <WhatsApp sx={{mx:1}}/>
+        <Typography>Conexão 1</Typography>
+        </Box>
+        <Typography>Conectado</Typography>
+      </Box>
     )
   };
 }

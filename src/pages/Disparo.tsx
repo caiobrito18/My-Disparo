@@ -18,7 +18,7 @@ import "../css/App.css";
 import api from "../services/api";
 
 const Disparo = () => {
-  const { render, sessoes } = useInstancias();
+  const {  sessoes } = useInstancias();
   const [columns, setColumns] = useState<any[]>([]);
   const [data, setData] = useState<any[]>([]);
   const [url, setUrl] = useState("");

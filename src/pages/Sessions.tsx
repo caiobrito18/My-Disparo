@@ -1,8 +1,12 @@
-import React from 'react'
+import useInstancias from '../components/Instancias'
 
 const Sessions = () => {
+  const {Card} = useInstancias()
+
   return (
-    <div>Sessions</div>
+    <div>
+      <Card ></Card>
+    </div>
   )
 }
 
