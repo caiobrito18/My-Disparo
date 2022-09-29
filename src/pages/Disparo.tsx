@@ -4,18 +4,17 @@ import {
   FilledInput,
   FormControl,
   FormControlLabel,
+  FormGroup,
   FormLabel, List,
   ListItemButton,
   ListItemIcon,
-  ListItemText,
-  ThemeProvider
+  ListItemText
 } from "@mui/material";
 import { FormEvent, useState } from "react";
 import DataTable from "react-data-table-component";
 import * as XLSX from "xlsx";
 import useInstancias from "../components/Instancias";
 import "../css/App.css";
-import { theme } from "../css/theme";
 import api from "../services/api";
 
 const Disparo = () => {
@@ -228,9 +227,8 @@ const Disparo = () => {
   };
 
   return (
-    <div className="App w-[100%] height-[90%] items-center justify-between flex">
-      <ThemeProvider theme={theme}>
-        <form
+    <>
+        <FormGroup
           onSubmit={handleForm}
           id="disparo"
           className="items-start justify-between flex flex-col gap-2"
@@ -265,10 +263,10 @@ const Disparo = () => {
                       ?.classList.toggle("hidden");
                   }}
                 />}
-              value="envio de arquivos"
-              label="Marque para enviar utilizando um arquivo '.CSV'"
-              labelPlacement="end"
-            />
+                value="envio de arquivos"
+                label="Marque para enviar utilizando um arquivo '.CSV'"
+                labelPlacement="end"
+                />
             <input
               type="file"
               name="csv"
@@ -341,7 +339,7 @@ const Disparo = () => {
               />
               <label htmlFor="">Limite</label>
               <FilledInput
-                type={"text"}
+                type={"number"}
                 id="cep"
                 value={limit}
                 onChange={(e) => setLimit(Number(e.target.value))}
@@ -406,8 +404,8 @@ const Disparo = () => {
               value={greet}
               onChange={(e) => setGreet(e.target.value)}
             />
-          </div>{" "}
-          {/* Corpo */}{" "}
+          </div>
+          {/* Corpo */}
           <div className="input-el h-40">
             <label>Corpo(s) das mensagens </label>
             <textarea
@@ -445,13 +443,10 @@ const Disparo = () => {
               className="rounded bg-red-600 my-2 px-3 py-1"
               value={"Debug"}
               onClick={handleDebug}
-            />
+              />
           </div>
-        </form>
-      </ThemeProvider>
-      <div className="m-5">{render}</div>
-    </div>
-  );
-};
+        </FormGroup>
+    </>
+  );};
 
 export default Disparo;
