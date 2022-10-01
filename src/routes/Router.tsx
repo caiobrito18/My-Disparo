@@ -8,15 +8,15 @@ import Sessions from "../pages/Sessions";
 
 const Router = () => (
   <BrowserRouter>
-  <ThemeProvider theme={theme}>
-    <Routes>
-      <Route path="/" element={<Login />} />
-      <Route element={<MainLayout><Outlet/></MainLayout>}>
-        <Route path="/main" element={<Disparo /> } />
-        <Route path="/sessions" element={<Sessions/>} />
-      </Route>
-    </Routes>
-  </ThemeProvider>
+    <ThemeProvider theme={theme}>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route element={<MainLayout><Outlet/></MainLayout>}>
+          <Route path="/main" element={<Disparo /> } />
+          <Route path="/sessions" element={<Sessions/>} />
+        </Route>
+      </Routes>
+    </ThemeProvider>
   </BrowserRouter>
 );
 

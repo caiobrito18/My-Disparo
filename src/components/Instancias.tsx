@@ -1,96 +1,118 @@
-import { WhatsApp } from "@mui/icons-material";
-import { Box, Typography } from "@mui/material";
-import { FormEvent, useState } from "react";
-import { TableColumn, TableRow } from "react-data-table-component";
+import { MoreVert, WhatsApp } from "@mui/icons-material";
+import { Box, IconButton, Menu, SxProps, Typography } from "@mui/material";
+import { Theme } from "@mui/system";
+import React, { useState } from "react";
 import api from "../services/api";
 
-interface DataRow {
-  sessao: string
-  conexao: string
+export interface CardProps{
+  session: string
+  connection: string
+  number: string
   name: string
-  id: string
-}
-interface CardProps{
-
+  sx?: SxProps<Theme>
 }
 
-export default function useInstancias () {
-  const columns: Array<TableColumn<DataRow>> = [
-    {
-      name: "sessão",
-      selector: (row) => row.sessao
-    },
-    {
-      name: "conexão",
-      selector: (row) => row.conexao
-    },
-    {
-      name: "id",
-      selector: (row) => row.id
-    },
-    {
-      name: "name",
-      selector: (row) => row.name
-    }
-  ];
-  // @ts-ignore
-  const [instanceArray, setInstanceArray] = useState<DataRow[]>([]);
+export default function useInstancias (sessionArray: CardProps[] | undefined) {
   const [selected, setSelected] = useState<any[]>([]);
-  const [url, setUrl] = useState("");
 
-  const handleSelected = ({ selectedRows }: TableRow) => {
-    // @ts-expect-error
-    setSelected(selectedRows);
-  };
-
-  async function loadInstances (e: FormEvent, url: string) {
-    e.preventDefault();
-    const req = api(url);
-    await req.get("/instance/list?active=true").then((res) => {
+  async function loadInstances (url: string) {
+    const req = api("https://api01.siriusalpha.com.br");
+    const data = await req.get("/instance/list?active=true").then((res) => {
       const slist = res.data.data;
-      console.log(slist);
       const data = [
         {
-          sessao: "",
-          conexao: "",
+          session: "",
+          connection: "",
           name: "",
-          id: ""
+          number: ""
         }
       ];
       for (let i = 0; i < slist.length; i++) {
-        console.log(slist[i].phone_connected);
         data.push({
-          sessao: slist[i].instance_key,
-          conexao: slist[i].phone_connected ? "conectado" : "desconectado",
+          session: slist[i].instance_key,
+          connection: slist[i].phone_connected ? "conectado" : "desconectado",
           name: slist[i].user.name,
-          id: slist[i].user.id
+          number: slist[i].user.id
         });
       }
       data.shift();
-      return setInstanceArray(data);
+      return data;
     });
-    console.log(instanceArray);
+    return data;
   }
 
   return {
-    sessoes: selected,
-    Card:()=>(
-      <Box sx={{
-        width:200,
-        height:100,
-        borderRadius:"15px",
-        backgroundColor:"primary.dark",
-        p:2,
-        display:'flex',
-        flexDirection:"column",
-        alignItems:"start"
-      }}>
-        <Box sx={{display:'flex'}}>
-        <WhatsApp sx={{mx:1}}/>
-        <Typography>Conexão 1</Typography>
+    loadInstances,
+    Card: ({ connection, session, name, number, sx }: CardProps) => {
+      const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+      const open = Boolean(anchorEl);
+      const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+        console.log(event.currentTarget);
+        setAnchorEl(event.currentTarget);
+      };
+      return (
+        <Box sx={{
+          ...sx,
+          width: 250,
+          height: 100,
+          borderRadius: "15px",
+          backgroundColor: "primary.dark",
+          p: 2,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "start"
+        }}>
+          <Box sx={{ display: "inline-flex" }}>
+            <Box sx={{ position: "relative", display: "block", top: "0px", right: "0px" }}>
+              <IconButton onClick={handleOpen} id={`icon-button-${name}`} sx={{ position: "absolute", top: "0px", right: "-230px" }}>
+                <MoreVert />
+              </IconButton>
+            </Box>
+            <Menu
+              id="long-menu"
+              MenuListProps={{
+                "aria-labelledby": "long-button"
+              }}
+              anchorEl={anchorEl}
+              open={open}
+              onClose={() => setAnchorEl(null)}
+              PaperProps={{
+                style: {
+                  maxHeight: 48 * 4.5,
+                  width: "20ch"
+                }
+              }}
+            >
+            </Menu>
+            <WhatsApp sx={{
+              mx: 1,
+              color: connection === "conectado"
+                ? "primary.contrastText"
+                : "error.main"
+            }}/>
+            <Typography>{session}</Typography>
+            <Typography sx={{
+              fontSize: 12,
+              alignSelf: "end",
+              mb: 0.5
+            }}>
+            ({name})
+            </Typography>
+          </Box>
+          <Box>
+            <Typography sx={{
+              color: connection === "conectado"
+                ? "primary.contrastText"
+                : "error.main"
+            }}>
+              {connection}
+            </Typography>
+            <Typography>
+              Número: {number.split(":")[0]}
+            </Typography>
+          </Box>
         </Box>
-        <Typography>Conectado</Typography>
-      </Box>
-    )
+      );
+    }
   };
 }
