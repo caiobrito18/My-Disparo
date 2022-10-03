@@ -38,6 +38,7 @@
     "no-extra-parens": "error",
     "no-unreachable": "error",
     "no-implicit-globals": "warn",
+    "no-unused-expressions":"off",
     "semi": ["error","always"],
     "require-await": "warn",
     "object-curly-newline": "warn",

@@ -1,5 +1,5 @@
 import { MoreVert, WhatsApp } from "@mui/icons-material";
-import { Box, IconButton, Menu, SxProps, Typography } from "@mui/material";
+import { Box, IconButton, Menu, MenuItem, SxProps, Typography } from "@mui/material";
 import { Theme } from "@mui/system";
 import React, { useState } from "react";
 import api from "../services/api";
@@ -16,7 +16,7 @@ export default function useInstancias (sessionArray: CardProps[] | undefined) {
   const [selected, setSelected] = useState<any[]>([]);
 
   async function loadInstances (url: string) {
-    const req = api("https://api01.siriusalpha.com.br");
+    const req = api(url);
     const data = await req.get("/instance/list?active=true").then((res) => {
       const slist = res.data.data;
       const data = [
@@ -50,6 +50,22 @@ export default function useInstancias (sessionArray: CardProps[] | undefined) {
         console.log(event.currentTarget);
         setAnchorEl(event.currentTarget);
       };
+      const handleDeleteInstance = async () => {
+        await api("https://api01.siriusalpha.com.br").delete("instance/delete", {
+          params: {
+            key: session
+          }
+        }).then(x => console.log(x));
+        setAnchorEl(null);
+      };
+      const handleLogoutInstance = async () => {
+        await api("https://api01.siriusalpha.com.br").delete("instance/logout", {
+          params: {
+            key: session
+          }
+        }).then(x => console.log(x));
+        setAnchorEl(null);
+      };
       return (
         <Box sx={{
           ...sx,
@@ -78,11 +94,19 @@ export default function useInstancias (sessionArray: CardProps[] | undefined) {
               onClose={() => setAnchorEl(null)}
               PaperProps={{
                 style: {
+                  backgroundColor: "#000005",
+                  color: "#ddf",
                   maxHeight: 48 * 4.5,
                   width: "20ch"
                 }
               }}
             >
+              <MenuItem onClick={handleDeleteInstance}>
+              Delete
+              </MenuItem>
+              <MenuItem onClick={handleLogoutInstance}>
+              Logout
+              </MenuItem>
             </Menu>
             <WhatsApp sx={{
               mx: 1,
