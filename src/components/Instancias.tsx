@@ -2,22 +2,22 @@ import { MoreVert, WhatsApp } from "@mui/icons-material";
 import { Box, IconButton, Menu, MenuItem, SxProps, Typography } from "@mui/material";
 import { Theme } from "@mui/system";
 import React, { useState } from "react";
-import api from "../services/api";
+import { req01 } from "../services/api";
 
 export interface CardProps{
   session: string
   connection: string
   number: string
   name: string
+  reloadInstances?: () => Promise<void>
   sx?: SxProps<Theme>
 }
 
 export default function useInstancias (sessionArray: CardProps[] | undefined) {
   const [selected, setSelected] = useState<any[]>([]);
 
-  async function loadInstances (url: string) {
-    const req = api(url);
-    const data = await req.get("/instance/list?active=true").then((res) => {
+  async function loadInstances () {
+    const data = await req01.get("/instance/list?active=true").then((res) => {
       const slist = res.data.data;
       const data = [
         {
@@ -43,7 +43,7 @@ export default function useInstancias (sessionArray: CardProps[] | undefined) {
 
   return {
     loadInstances,
-    Card: ({ connection, session, name, number, sx }: CardProps) => {
+    Card: ({ connection, session, name, number, sx, reloadInstances }: CardProps) => {
       const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
       const open = Boolean(anchorEl);
       const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -51,19 +51,23 @@ export default function useInstancias (sessionArray: CardProps[] | undefined) {
         setAnchorEl(event.currentTarget);
       };
       const handleDeleteInstance = async () => {
-        await api("https://api01.siriusalpha.com.br").delete("instance/delete", {
+        await req01.delete("instance/delete", {
           params: {
             key: session
           }
         }).then(x => console.log(x));
+        // @ts-expect-error
+        await reloadInstances();
         setAnchorEl(null);
       };
       const handleLogoutInstance = async () => {
-        await api("https://api01.siriusalpha.com.br").delete("instance/logout", {
+        await req01.delete("instance/logout", {
           params: {
             key: session
           }
         }).then(x => console.log(x));
+        // @ts-expect-error
+        await reloadInstances();
         setAnchorEl(null);
       };
       return (
