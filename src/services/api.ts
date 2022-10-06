@@ -6,4 +6,4 @@ export default function api (url: string) {
   });
 }
 
-export const req01 = api("https://api01.siriusalpha.com.br");
+export const req01 = api("http://localhost:3333");

@@ -1,7 +1,7 @@
 import { MoreVert, WhatsApp } from "@mui/icons-material";
 import { Box, IconButton, Menu, MenuItem, SxProps, Typography } from "@mui/material";
 import { Theme } from "@mui/system";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { req01 } from "../services/api";
 
 export interface CardProps{
@@ -11,11 +11,10 @@ export interface CardProps{
   name: string
   reloadInstances?: () => Promise<void>
   sx?: SxProps<Theme>
+  selected?: CardProps[]
+  setSelected?: React.Dispatch<React.SetStateAction<CardProps[] | undefined>>
 }
-
 export default function useInstancias (sessionArray: CardProps[] | undefined) {
-  const [selected, setSelected] = useState<any[]>([]);
-
   async function loadInstances () {
     const data = await req01.get("/instance/list?active=true").then((res) => {
       const slist = res.data.data;
@@ -43,9 +42,15 @@ export default function useInstancias (sessionArray: CardProps[] | undefined) {
 
   return {
     loadInstances,
-    Card: ({ connection, session, name, number, sx, reloadInstances }: CardProps) => {
+    Card: ({ connection, session, name, number, sx, reloadInstances, selected, setSelected }: CardProps) => {
       const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
       const open = Boolean(anchorEl);
+      const self: CardProps = {
+        connection,
+        session,
+        name,
+        number
+      };
       const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
         console.log(event.currentTarget);
         setAnchorEl(event.currentTarget);
@@ -70,6 +75,7 @@ export default function useInstancias (sessionArray: CardProps[] | undefined) {
         await reloadInstances();
         setAnchorEl(null);
       };
+
       return (
         <Box sx={{
           ...sx,
