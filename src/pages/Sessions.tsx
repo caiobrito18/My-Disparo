@@ -59,17 +59,15 @@ const Sessions = () => {
       <FormControl sx={{ justifyContent: "center", alignItems: "center" }}>
         <Button onClick={handleCampaign}>Criar Campanha</Button>
         <TextField
-          margin="normal"
-          required
+          margin="none"
           fullWidth
           id="campaign"
           label="Nome da Campanha"
-          name="email"
-          sx={{ border: "primary.light", width: 300 }}
-          autoComplete="email"
+          name="campign"
+          InputProps={{ sx: { backgroundColor: "#0f000f" } }}
+          sx={{ border: "primary.dark", width: 300 }}
           value={campaign}
           onChange={(e) => setCampaign(e.target.value)}
-          autoFocus
         />
       </FormControl>
       <Grid container
@@ -86,6 +84,7 @@ const Sessions = () => {
               sx={{ m: 1 }}
               connection={s.connection}
               reloadInstances={handleinstance}
+              moreOptions
               name={s.name}
               number={s.number}
               session={s.session}
@@ -108,6 +107,7 @@ const Sessions = () => {
               sx={{ m: 1 }}
               connection={s.connection}
               reloadInstances={handleinstance}
+              moreOptions
               name={s.name}
               number={s.number}
               session={s.session}

@@ -1,7 +1,7 @@
 import { MoreVert, WhatsApp } from "@mui/icons-material";
 import { Box, IconButton, Menu, MenuItem, SxProps, Typography } from "@mui/material";
 import { Theme } from "@mui/system";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { req01 } from "../services/api";
 
 export interface CardProps{
@@ -9,12 +9,13 @@ export interface CardProps{
   connection: string
   number: string
   name: string
+  moreOptions?: boolean
   reloadInstances?: () => Promise<void>
   sx?: SxProps<Theme>
   selected?: CardProps[]
   setSelected?: React.Dispatch<React.SetStateAction<CardProps[] | undefined>>
 }
-export default function useInstancias (sessionArray: CardProps[] | undefined) {
+export default function useInstancias (sessionArray?: CardProps[] | undefined) {
   async function loadInstances () {
     const data = await req01.get("/instance/list?active=true").then((res) => {
       const slist = res.data.data;
@@ -42,7 +43,17 @@ export default function useInstancias (sessionArray: CardProps[] | undefined) {
 
   return {
     loadInstances,
-    Card: ({ connection, session, name, number, sx, reloadInstances, selected, setSelected }: CardProps) => {
+    Card: ({
+      connection,
+      session,
+      name,
+      number,
+      sx,
+      reloadInstances,
+      selected,
+      setSelected,
+      moreOptions
+    }: CardProps) => {
       const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
       const open = Boolean(anchorEl);
       const self: CardProps = {
@@ -90,34 +101,36 @@ export default function useInstancias (sessionArray: CardProps[] | undefined) {
         }}>
           <Box sx={{ display: "inline-flex" }}>
             <Box sx={{ position: "relative", display: "block", top: "0px", right: "0px" }}>
-              <IconButton onClick={handleOpen} id={`icon-button-${name}`} sx={{ position: "absolute", top: "0px", right: "-230px" }}>
+              <IconButton onClick={handleOpen} id={`icon-button-${name}`} sx={{ position: "absolute", top: "0px", right: "-230px", display: moreOptions ? "inherit" : "none" }}>
                 <MoreVert />
               </IconButton>
             </Box>
-            <Menu
-              id="long-menu"
-              MenuListProps={{
-                "aria-labelledby": "long-button"
-              }}
-              anchorEl={anchorEl}
-              open={open}
-              onClose={() => setAnchorEl(null)}
-              PaperProps={{
-                style: {
-                  backgroundColor: "#000005",
-                  color: "#ddf",
-                  maxHeight: 48 * 4.5,
-                  width: "20ch"
-                }
-              }}
-            >
-              <MenuItem onClick={handleDeleteInstance}>
+            {moreOptions
+              ? (<Menu
+                id="long-menu"
+                MenuListProps={{
+                  "aria-labelledby": "long-button"
+                }}
+                anchorEl={anchorEl}
+                open={open}
+                onClose={() => setAnchorEl(null)}
+                PaperProps={{
+                  style: {
+                    backgroundColor: "#000005",
+                    color: "#ddf",
+                    maxHeight: 48 * 4.5,
+                    width: "20ch"
+                  }
+                }}
+              >
+                <MenuItem onClick={handleDeleteInstance}>
               Delete
-              </MenuItem>
-              <MenuItem onClick={handleLogoutInstance}>
+                </MenuItem>
+                <MenuItem onClick={handleLogoutInstance}>
               Logout
-              </MenuItem>
-            </Menu>
+                </MenuItem>
+              </Menu>)
+              : null}
             <WhatsApp sx={{
               mx: 1,
               color: connection === "conectado"
