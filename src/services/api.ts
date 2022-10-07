@@ -6,4 +6,4 @@ export default function api (url: string) {
   });
 }
 
-export const req01 = api("http://localhost:3333");
+export const req01 = api("http://0.0.0.0:3333");
