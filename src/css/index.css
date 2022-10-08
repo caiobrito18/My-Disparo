@@ -23,8 +23,4 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
-@layer components {
-  .input-el {
-    @apply flex my-2 gap-1 w-full flex-col h-10;
-  }
-}
+

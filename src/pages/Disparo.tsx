@@ -1,26 +1,24 @@
 import {
+  Box,
   Button,
-  Checkbox,
-  FilledInput,
-  FormControl,
-  FormControlLabel,
-  FormGroup,
-  FormLabel, List,
+  Checkbox, FormControl,
+  FormControlLabel, FormLabel, List,
   ListItemButton,
   ListItemIcon,
-  ListItemText
+  ListItemText, Paper,
+  TextField
 } from "@mui/material";
-import { FormEvent, useState } from "react";
+import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import * as XLSX from "xlsx";
+import { CardProps } from "../components/Instancias";
 import "../css/App.css";
-import api from "../services/api";
+import { req01 } from "../services/api";
 
 const Disparo = () => {
-  const sessoes: string[] = [""];
+  const sessoes: CardProps[] = [];
   const [columns, setColumns] = useState<any[]>([]);
   const [data, setData] = useState<any[]>([]);
-  const [url, setUrl] = useState("");
   const [number, setNumber] = useState([]);
   const [minWait, setMinWait] = useState("");
   const [maxWait, setMaxWait] = useState("");
@@ -38,8 +36,10 @@ const Disparo = () => {
   const [end, setEnd] = useState("");
   const [comp, setComp] = useState("");
   const [limit, setLimit] = useState<number | undefined>(undefined);
-  const req = api(url);
 
+  useEffect(() => {
+    handleStates().catch((err) => err ? alert(`Houve um erro ao carregar os filtros! \n ${err}`) : null);
+  }, []);
   const customStyles = {
     cells: {
       style: {
@@ -50,7 +50,7 @@ const Disparo = () => {
   };
 
   async function handleStates () {
-    const data = (await req.get<string[]>("custom/states")).data;
+    const data = (await req01.get<string[]>("custom/states")).data;
     const states = data.map((x: any) => x.UF);
     console.log(states);
     setStates(states);
@@ -63,10 +63,9 @@ const Disparo = () => {
     setGreetArray(splitg);
   }
 
-  async function handleForm (e: FormEvent) {
-    e.preventDefault();
-    const sessions = sessoes.map((e: any) => e.sessao);
-    await req.post("/custom/disparo", {
+  const handleDisparo = async () => {
+    const sessions = sessoes.map((item: CardProps) => item.session);
+    await req01.post("/custom/disparo", {
       MessageData: {
         MessageBody: messageBody,
         greets: greetArray,
@@ -77,16 +76,10 @@ const Disparo = () => {
       maxWait,
       Numbers: number
     });
-  }
+  };
 
-  function handleInstance () {
-    if (url == undefined) {
-      return new Error();
-    }
-  }
   async function handleFilter () {
-    console.log(selectedCities.length);
-    await req.post("/custom/numeros",
+    await req01.post("/custom/numeros",
       {
         filter: {
           uf: (selectedStates.length !== 0 ? selectedStates : undefined),
@@ -121,15 +114,6 @@ const Disparo = () => {
         }
       });
       setNumber(numberlist);
-    });
-  }
-  function handleDebug () {
-    handleMessage();
-    console.log({
-      number,
-      sessoes,
-      goodbyeArray,
-      greetArray
     });
   }
   // process CSV data
@@ -199,7 +183,6 @@ const Disparo = () => {
     };
     reader.readAsBinaryString(file);
   };
-
   const toggleStates = async (field: string, index: number, value: string) => {
     const newSelection = [...selectedStates];
     if (selectedStates.includes(value)) {
@@ -209,11 +192,10 @@ const Disparo = () => {
       setselectedStates(newSelection);
     }
 
-    const data = (await req.post("custom/cids", { uf: newSelection })).data;
+    const data = (await req01.post("custom/cids", { uf: newSelection })).data;
     const cities = data.map((x: any) => x.CIDADE);
     setCities(cities);
   };
-
   const toggleCities = (field: string, index: number, value: string) => {
     const newSelection = [...selectedCities];
     if (selectedCities.includes(value)) {
@@ -227,31 +209,11 @@ const Disparo = () => {
 
   return (
     <>
-      <FormGroup
-        onSubmit={handleForm}
+      <Box
         id="disparo"
         className="items-start justify-between flex flex-col gap-2"
         sx={{ flex: 1, display: "flex", placeItems: "center" }}
       >
-        {/* coloca as informações de envio */}
-        <FormControl sx={{ flexDirection: "row" }} >
-          <FormLabel>Url: </FormLabel>
-          <FilledInput
-            type={"text"}
-            value={url}
-            sx={{ height: "2rem" }}
-            onChange={(e) => setUrl(e.target.value)}
-            autoComplete="url"
-          />
-          <Button
-            type={"button"}
-            sx={{ bgcolor: "primary.main", ":hover": { bgcolor: "primary.light" } }}
-            value={"Carregar Filtros"}
-            variant="contained"
-            onClick={handleStates}
-          >Carregar filtros</Button>
-
-        </FormControl>
         {/* Número de Telefone do cliente */}
         <FormControl>
           <FormControlLabel
@@ -284,10 +246,12 @@ const Disparo = () => {
             columns={columns}
             data={data}
           />
-          <div className="flex flex-col">
-            <label htmlFor="">Filtros para envios das mensagens: </label>
-            <label htmlFor="">Estado</label>
-            <div className="w-full h-32 overflow-scroll">
+          <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "space-around", gap: 2 }}>
+            <FormLabel >Filtros para envios das mensagens: </FormLabel>
+            <FormLabel >Estado</FormLabel>
+            <Paper elevation={5}
+              sx={{ width: 400, height: 100, backgroundColor: "secondary.dark", overflow: "scroll", borderStyle: "dashed", borderColor: "primary.dark", borderWidth: "1px" }}
+            >
               <List>
                 {states.map((k: string, i: number) => (
                   <ListItemButton
@@ -307,9 +271,11 @@ const Disparo = () => {
                   </ListItemButton>
                 ))}
               </List>
-            </div>
-            <label htmlFor="">Cidade</label>
-            <div className="w-full h-32 overflow-scroll">
+            </Paper>
+            <FormLabel>Cidade</FormLabel>
+            <Paper elevation={5}
+              sx={{ width: 400, height: 100, backgroundColor: "secondary.dark", overflow: "scroll", borderStyle: "dashed", borderColor: "primary.dark", borderWidth: "1px" }}
+            >
               <List>
                 {cities.map((k: string, i: number) => (
                   <ListItemButton
@@ -329,123 +295,107 @@ const Disparo = () => {
                   </ListItemButton>
                 ))}
               </List>
-            </div>
-            <label htmlFor="">Cep</label>
-            <FilledInput
+            </Paper>
+            <TextField
+              label="cep"
               type={"text"}
               id="cep"
               value={cep}
               onChange={(e) => setCep(e.target.value)}
             />
-            <label htmlFor="">Limite</label>
-            <FilledInput
+            <TextField
+              label="limit"
               type={"number"}
               id="cep"
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
             />
-            <label htmlFor="">Bairro</label>
-            <FilledInput
+            <TextField
+              label="bairro"
               type={"text"}
               id="cep"
               value={bairro}
               onChange={(e) => setBairro(e.target.value)}
             />
-            <label htmlFor="">Endereço</label>
-            <FilledInput
+            <TextField
+              label="Endereço"
               type={"text"}
               id="cep"
               value={end}
               onChange={(e) => setEnd(e.target.value)}
             />
-            <label htmlFor="">Complemento</label>
-            <FilledInput
+            <TextField
+              label="complemento"
               type={"text"}
               id="cep"
               value={comp}
               onChange={(e) => setComp(e.target.value)}
             />
 
-            <button
+            <Button
               type="button"
-              className="rounded bg-red-600 my-2 px-3 py-1"
+              sx={{ backgroundColor: "primary.dark", color: "text.primary" }}
               onClick={handleFilter}
             >
                 Filtrar
-            </button>
-          </div>
+            </Button>
+          </Box>
         </FormControl>
-        <label>Intervalo de envio entre mensagens</label>
+        <FormLabel>Intervalo de envio entre mensagens</FormLabel>
         {/* <FilledInput type="text" value={number} onChange={(e)=>setNumber(e.target.value)}/>  */}
-        <div className="bg-slate500 flex justify-around align-middle">
-          <FilledInput
+        <Box sx={{ display: "flex", justifyContent: "space-around", alignItems: "center" }}>
+          <TextField
             type="number"
             value={minWait}
             className="w-full mx-1"
             onChange={(e) => setMinWait(e.target.value)}
-            placeholder="delay mínimo"
+            label="delay mínimo"
           />
-          <FilledInput
+          <TextField
             type="number"
             value={maxWait}
             className="w-full mx-1"
             onChange={(e) => setMaxWait(e.target.value)}
-            placeholder="delay máximo"
+            label="delay máximo"
           />
-        </div>
+        </Box>
         {/* coloca as informações de mensagem */}
         {/* Corpo da Mensagem */}
         {/* Saudação */}
-        <div className="input-el">
-          <label>Saudações separadas por ; </label>
-          <FilledInput
+        <Box sx={{ display: "flex", gap: 2, flexDirection: "column", alignItems: "ceenter" }}>
+          <TextField
             type={"text"}
-            id="lista-titulo"
+            id="saudacoes"
+            margin="normal"
+            label="Saudações separadas por ;"
             value={greet}
             onChange={(e) => setGreet(e.target.value)}
           />
-        </div>
-        {/* Corpo */}
-        <div className="input-el h-40">
-          <label>Corpo(s) das mensagens </label>
-          <textarea
-            id="lista-itens"
-            className="h-64 resize-none scroll-auto"
+          {/* Corpo */}
+          <TextField
+            multiline
+            id="Corpo"
+            label="Corpo da Mensagem"
             value={messageBody}
             onChange={(e) => setMessageBody(e.target.value)}
             title='Separado com ";"'
           />
-        </div>
-        {/* Despedidas */}
-        <div className="input-el">
-          <label>Despedidas separadas por ; </label>
-          <FilledInput
+          {/* Despedidas */}
+          <TextField
             type={"text"}
+            rows={10}
             id="lista-texto"
             value={goodbye}
+            label="despedidas separadas por ;"
             onChange={(e) => setGoodBye(e.target.value)}
           />
-        </div>
-        <div className="flex gap-2">
-          <FilledInput
-            type={"submit"}
-            className="rounded bg-red-600 my-2 px-3 py-1"
-            value={"Disparar"}
-          />
-          <FilledInput
-            type={"button"}
-            className="rounded bg-red-600 my-2 px-3 py-1"
-            value={"instância"}
-            onClick={handleInstance}
-          />
-          <FilledInput
-            type={"button"}
-            className="rounded bg-red-600 my-2 px-3 py-1"
-            value={"Debug"}
-            onClick={handleDebug}
-          />
-        </div>
-      </FormGroup>
+        </Box>
+        <Box className="flex gap-2">
+          <Button
+            onClick={handleDisparo}
+          >Disparar</Button>
+        </Box>
+      </Box>
     </>
   );
 };

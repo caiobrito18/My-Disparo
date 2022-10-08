@@ -39,7 +39,7 @@ const Sidebar = (props: any) => {
           height: 64
         }}
       >
-        <Box sx={{ display: "inline-flex", justifyContent: "center" }}>
+        <Box sx={{ display: "inline-flex", justifyContent: "spaace-around" }}>
           {items.map((item, index) => (
             <NavItem
               key={item.title}
@@ -60,7 +60,8 @@ const Sidebar = (props: any) => {
         sx: {
           backgroundColor: "secondary.main",
           color: "#FFFFFF",
-          width: "100%"
+          width: "100%",
+          overflowX: "scroll"
         }
       }}
       sx={{ zIndex: (theme) => theme.zIndex.appBar + 100 }}
