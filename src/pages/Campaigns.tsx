@@ -2,13 +2,13 @@ import { Box, Grid, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import useInstancias, { CardProps } from "../components/Instancias";
 import { req01 } from "../services/api";
-interface Response{
+export interface Camp{
   CAMPANHA: string
   SESSOES: CardProps[]
   STATUS: string
 }
 const Campaigns = () => {
-  const [campaigns, setCampaigns] = useState<Response[]>([]);
+  const [campaigns, setCampaigns] = useState<Camp[]>([]);
   const handleCampaings = async () => {
     const data = await req01.get("custom/campanha");
     setCampaigns(data.data);

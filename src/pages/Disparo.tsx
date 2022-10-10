@@ -2,32 +2,36 @@ import {
   Box,
   Button,
   Checkbox, FormControl,
-  FormControlLabel, FormLabel, List,
+  FormControlLabel, FormLabel, Grid, List,
   ListItemButton,
   ListItemIcon,
   ListItemText, Paper,
   TextField
 } from "@mui/material";
+import { AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import * as XLSX from "xlsx";
-import { CardProps } from "../components/Instancias";
+import useInstancias, { CardProps } from "../components/Instancias";
 import "../css/App.css";
 import { req01 } from "../services/api";
+import { Camp } from "./Campaigns";
 
 const Disparo = () => {
-  const sessoes: CardProps[] = [];
+  const { Card } = useInstancias();
   const [columns, setColumns] = useState<any[]>([]);
   const [data, setData] = useState<any[]>([]);
   const [number, setNumber] = useState([]);
-  const [minWait, setMinWait] = useState("");
-  const [maxWait, setMaxWait] = useState("");
+  const [minWait, setMinWait] = useState(5);
+  const [maxWait, setMaxWait] = useState(10);
   const [messageBody, setMessageBody] = useState("");
   const [goodbyeArray, setGoodByeArray] = useState([""]);
   const [greetArray, setGreetArray] = useState([""]);
   const [greet, setGreet] = useState("");
   const [goodbye, setGoodBye] = useState("");
   const [states, setStates] = useState<string[]>([]);
+  const [campaigns, setCampaigns] = useState<Camp[]>([]);
+  const [selectedCampaigns, setSelectedCampaigns] = useState<Camp[]>([]);
   const [selectedStates, setselectedStates] = useState<string[]>([]);
   const [cities, setCities] = useState([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
@@ -35,9 +39,10 @@ const Disparo = () => {
   const [bairro, setBairro] = useState("");
   const [end, setEnd] = useState("");
   const [comp, setComp] = useState("");
-  const [limit, setLimit] = useState<number | undefined>(undefined);
+  const [limit, setLimit] = useState<number | undefined>(100);
 
   useEffect(() => {
+    handleCampaigns().catch((err) => err ? alert(`Houve um erro ao carregar os Campanhas! \n ${err}`) : null);
     handleStates().catch((err) => err ? alert(`Houve um erro ao carregar os filtros! \n ${err}`) : null);
   }, []);
   const customStyles = {
@@ -48,7 +53,11 @@ const Disparo = () => {
       }
     }
   };
-
+  const handleCampaigns = async () => {
+    const data = await req01.get("custom/campanha");
+    setCampaigns(data.data);
+    return data;
+  };
   async function handleStates () {
     const data = (await req01.get<string[]>("custom/states")).data;
     const states = data.map((x: any) => x.UF);
@@ -64,7 +73,9 @@ const Disparo = () => {
   }
 
   const handleDisparo = async () => {
-    const sessions = sessoes.map((item: CardProps) => item.session);
+    handleMessage();
+    const sessions = selectedCampaigns[0].SESSOES.map(x => x.session);
+    console.log(sessions);
     await req01.post("/custom/disparo", {
       MessageData: {
         MessageBody: messageBody,
@@ -75,7 +86,7 @@ const Disparo = () => {
       minWait,
       maxWait,
       Numbers: number
-    });
+    }).then((res: AxiosResponse<any, any>) => console.log(res.data.data));
   };
 
   async function handleFilter () {
@@ -183,6 +194,15 @@ const Disparo = () => {
     };
     reader.readAsBinaryString(file);
   };
+  const toggleCampaigns = async (field: string, index: number, value: Camp) => {
+    const newSelection = [...selectedCampaigns];
+    if (selectedCampaigns.includes(value)) {
+      setSelectedCampaigns(newSelection.filter((x) => x != value));
+    } else {
+      newSelection.push(value);
+      setSelectedCampaigns(newSelection);
+    }
+  };
   const toggleStates = async (field: string, index: number, value: string) => {
     const newSelection = [...selectedStates];
     if (selectedStates.includes(value)) {
@@ -208,11 +228,10 @@ const Disparo = () => {
   };
 
   return (
-    <>
+    <Box sx={{ display: "inline-flex", flexDirection: "row", justifySelf: "center" }}>
       <Box
         id="disparo"
-        className="items-start justify-between flex flex-col gap-2"
-        sx={{ flex: 1, display: "flex", placeItems: "center" }}
+        sx={{ display: "flex", flexDirection: "column", gap: 2, alignItems: "center", JustifyContent: "space-between" }}
       >
         {/* Número de Telefone do cliente */}
         <FormControl>
@@ -345,17 +364,17 @@ const Disparo = () => {
         {/* <FilledInput type="text" value={number} onChange={(e)=>setNumber(e.target.value)}/>  */}
         <Box sx={{ display: "flex", justifyContent: "space-around", alignItems: "center" }}>
           <TextField
-            type="number"
+            type={"number"}
             value={minWait}
             className="w-full mx-1"
-            onChange={(e) => setMinWait(e.target.value)}
+            onChange={(e) => setMinWait(Number(e.target.value))}
             label="delay mínimo"
           />
           <TextField
-            type="number"
+            type={"number"}
             value={maxWait}
             className="w-full mx-1"
-            onChange={(e) => setMaxWait(e.target.value)}
+            onChange={(e) => setMaxWait(Number(e.target.value))}
             label="delay máximo"
           />
         </Box>
@@ -396,7 +415,43 @@ const Disparo = () => {
           >Disparar</Button>
         </Box>
       </Box>
-    </>
+      <Box>
+        <Paper elevation={5}
+          sx={{ width: 800, height: 500, backgroundColor: "secondary.dark", overflow: "scroll", borderStyle: "dashed", borderColor: "primary.dark", borderWidth: "1px" }}
+        >
+          <List>
+            {campaigns.map((k: Camp, i: number) => (
+              <ListItemButton
+                key={i}
+                role={undefined}
+                onClick={async () => await toggleCampaigns("state", i, k)}
+              >
+                <ListItemIcon>
+                  <Checkbox
+                    edge="start"
+                    checked={selectedCampaigns[0] === k}
+                    tabIndex={-1}
+                    disableRipple
+                  />
+                </ListItemIcon>
+                {k.SESSOES?.map((s: CardProps, k: any) => (
+                  <Grid item key={k}>
+                    <Card
+                      sx={{ m: 1 }}
+                      connection={s.connection}
+                      name={s.name}
+                      number={s.number}
+                      session={s.session}
+                    />
+                  </Grid>
+                )
+                )}
+              </ListItemButton>
+            ))}
+          </List>
+        </Paper>
+      </Box>
+    </Box>
   );
 };
 
