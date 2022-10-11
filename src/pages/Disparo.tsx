@@ -21,7 +21,7 @@ const Disparo = () => {
   const { Card } = useInstancias();
   const [columns, setColumns] = useState<any[]>([]);
   const [data, setData] = useState<any[]>([]);
-  const [number, setNumber] = useState([]);
+  const [number, setNumber] = useState<any[]>([]);
   const [minWait, setMinWait] = useState(5);
   const [maxWait, setMaxWait] = useState(10);
   const [messageBody, setMessageBody] = useState("");
@@ -64,7 +64,9 @@ const Disparo = () => {
     console.log(states);
     setStates(states);
   }
-
+  function handleDebug () {
+    console.log(number);
+  }
   function handleMessage () {
     const splitg = greet.split(";");
     const splitgb = goodbye.split(";");
@@ -160,17 +162,17 @@ const Disparo = () => {
     // prepare columns list from headers
     const columns = headers.map((c) => ({
       name: c,
-      selector: (row: any) => row.TELEFONE
+      selector: (row: any) => row.TEL_WHATSAPP
     }));
-    const data = list.map(
-      // @ts-ignore
-      ({ NOME, DOCUMENTO, ENDERECO, CEP, ...rest }) => rest
-    );
+    const data = list;
     const newCols = columns.filter((arr) => {
       if (arr.name == "TELEFONE") {
         return arr;
       }
     });
+
+    const number = list.map((x: any) => x.TEL_WHATSAPP);
+    setNumber(number);
     setData(data);
     setColumns(newCols);
     console.log("data:", data);
