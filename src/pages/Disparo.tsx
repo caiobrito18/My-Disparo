@@ -25,8 +25,8 @@ const Disparo = () => {
   const [minWait, setMinWait] = useState(5);
   const [maxWait, setMaxWait] = useState(10);
   const [messageBody, setMessageBody] = useState("");
-  const [goodbyeArray, setGoodByeArray] = useState([""]);
-  const [greetArray, setGreetArray] = useState([""]);
+  // const [goodbyeArray, setGoodByeArray] = useState([""]);
+  // const [greetArray, setGreetArray] = useState([""]);
   const [greet, setGreet] = useState("");
   const [goodbye, setGoodBye] = useState("");
   const [states, setStates] = useState<string[]>([]);
@@ -70,14 +70,18 @@ const Disparo = () => {
   function handleMessage () {
     const splitg = greet.split(";");
     const splitgb = goodbye.split(";");
-    setGoodByeArray(splitgb);
-    setGreetArray(splitg);
+    // setGoodByeArray(splitgb);
+    // setGreetArray(splitg);
+    // console.log(greetArray, goodbyeArray);
   }
 
   const handleDisparo = async () => {
-    handleMessage();
+    const greetArray = greet.split(";");
+    const goodbyeArray = goodbye.split(";");
     const sessions = selectedCampaigns[0].SESSOES.map(x => x.session);
     console.log(sessions);
+    console.log(greetArray, goodbyeArray);
+
     await req01.post("/custom/disparo", {
       MessageData: {
         MessageBody: messageBody,
